@@ -109,9 +109,25 @@ homeInfo.insert(tk.END, "\n\nLatest Updates\n--------------\n - First live build
 
 
 #Define Settings page UI elements
-tradingPairText = tk.Text(settingsFrame, relief=FLAT, fg="white", bg="#282923", height=2, width=48)
-tradingPairText.pack()
-tradingPairText.insert(tk.END, "\nSelect Trading Pair")
+tk.Label(settingsFrame, text="", bg="#282923").grid(row=0)
+
+publicLabel = tk.Label(settingsFrame, text="   Public Key")
+publicLabel.config(relief=FLAT, bg="#282923", fg="white")
+publicLabel.grid(row=1)
+publicAPIKeyBox = tk.Entry(settingsFrame, show="*", width=46)
+publicAPIKeyBox.grid(row=1, column=1)
+
+privateLabel = tk.Label(settingsFrame, text="   Private Key")
+privateLabel.config(relief=FLAT, bg="#282923", fg="white")
+privateLabel.grid(row=2)
+privateAPIKeyBox = tk.Entry(settingsFrame, show="*", width=46)
+privateAPIKeyBox.grid(row=2, column=1)
+
+tk.Label(settingsFrame, text="", bg="#282923").grid(row=3)
+
+tradingPairText = tk.Label(settingsFrame, text="   Trading Pair")
+tradingPairText.config(relief=FLAT, bg="#282923", fg="white")
+tradingPairText.grid(row=4, column=0)
 tradingPairOptions = [
     "COS_ETH",
     "COS_BTC",
@@ -123,11 +139,11 @@ pairMenu = OptionMenu(*(settingsFrame, tradingPair) + tuple(tradingPairOptions))
 pairMenu.config(bg="#282923", fg="white", relief=FLAT)
 pairMenu["menu"].config(bg="#282923", fg="white", relief=FLAT)
 pairMenu["highlightthickness"]=0
-pairMenu.pack()
+pairMenu.grid(row=4, column=1)
 
-tradingStratText = tk.Text(settingsFrame, relief=FLAT, fg="white", bg="#282923", height=2, width=48)
-tradingStratText.pack()
-tradingStratText.insert(tk.END, "\nSelect Trading Strategy")
+tradingStratText = tk.Label(settingsFrame, text="   Trading Strategy")
+tradingStratText.config(relief=FLAT, bg="#282923", fg="white")
+tradingStratText.grid(row=5, column=0)
 tradingStratOptions = [
     "GRID MM",
     "Buy Low Sell High"
@@ -138,7 +154,7 @@ stratMenu = OptionMenu(*(settingsFrame, tradingStrat) + tuple(tradingStratOption
 stratMenu.config(bg="#282923", fg="white", relief=FLAT)
 stratMenu["menu"].config(bg="#282923", fg="white", relief=FLAT)
 stratMenu["highlightthickness"]=0
-stratMenu.pack()
+stratMenu.grid(row=5, column=1)
 
 #Define Run page UI elements
 
@@ -146,14 +162,19 @@ stratMenu.pack()
 aboutInfo = tk.Text(aboutFrame, relief=FLAT, fg="white", bg="#282923", height=18, width=47)
 aboutInfo.pack()
 aboutInfo.insert(tk.END, "\nBot created by Omer \nTelegram: @omer259\nReddit: https://www.reddit.com/user/Omer259/")
-aboutInfo.insert(tk.END, "\n\nBitcoin Donation Address: \n1CG1xXXjPqYFmh3PfYaiPEvxQUZLCgBREr")
-aboutInfo.insert(tk.END, "\n\nEthereum Donation Address: \n0x1321f921b0c7341f1596d36240f31b0f4e29082a")
+aboutInfo.insert(tk.END, "\n\nBitcoin Donation Address: \nbc1qnjcnhcex50659vxnuhdkuzhhu4m0ewmx6p43j2")
+aboutInfo.insert(tk.END, "\n\nEthereum Donation Address: \n0xE9b79A87520DFB16824d9AfC40a7d8bC1a81a753")
 
 #Define History page UI elements
 
 #Setup UI elements
 root.winfo_toplevel().title("1Click COSS Bot")
-root.iconbitmap('coss.ico')
+
+if os.name == "nt":
+	root.iconbitmap('coss.ico')
+else:
+	print("Icons not supported in this OS")
+
 canvas.pack()
 btnFrame.place(relwidth=0.8, relheight=0.05, relx=0.1, rely=0.075)
 homeFrame.place(relwidth=FRAMEWIDTH, relheight=FRAMEHEIGHT, relx=FRAMEPADX, rely=FRAMEPADY)
