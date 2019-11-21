@@ -29,6 +29,7 @@ def clearFrames():
 	runFrame.place_forget()
 	aboutFrame.place_forget()
 	historyFrame.place_forget()
+	gridStratFrame.place_forget()
 	homeBtn.config(relief=RAISED)
 	runBtn.config(relief=RAISED)
 	settingsBtn.config(relief=RAISED)
@@ -52,6 +53,7 @@ def openSettings():
 	clearFrames()
 	settingsBtn.config(relief=SUNKEN)
 	settingsFrame.place(relwidth=FRAMEHEIGHT, relheight=FRAMEWIDTH, relx=FRAMEPADX, rely=FRAMEPADY)
+	gridStratFrame.place(relwidth=FRAMEWIDTH*0.9, relheight=FRAMEHEIGHT/1.7, relx=FRAMEPADX*1.4, rely=FRAMEPADY*2.95)
 
 #Create function for run button
 def openRun():
@@ -80,6 +82,18 @@ def openHistory():
 	historyBtn.config(relief=SUNKEN)
 	historyFrame.place(relwidth=FRAMEHEIGHT, relheight=FRAMEWIDTH, relx=FRAMEPADX, rely=FRAMEPADY)
 
+def stratMenuChanged(event):
+	'''
+	Update settings UI to reflect changed strategy
+	'''
+	if tradingStrat.get() == "Buy Low Sell High":
+		print("This strategy is not yet supported!")
+		gridStratFrame.place_forget()
+	elif tradingStrat.get() == "GRID MM":
+		print("Setting up UI for GRID strategy")
+		gridStratFrame.place(relwidth=FRAMEWIDTH*0.9, relheight=FRAMEHEIGHT/1.7, relx=FRAMEPADX*1.35, rely=FRAMEPADY*2.95)
+	#print("Strategy was changed to " + tradingStrat.get())
+
 #Create the root UI
 root = tk.Tk()
 root.configure(bg='#282923')
@@ -93,6 +107,7 @@ runFrame = tk.Frame(root, bg="#282923")
 settingsFrame = tk.Frame(root, bg="#282923")
 aboutFrame = tk.Frame(root,bg="#282923")
 historyFrame = tk.Frame(root,bg="#282923")
+notificationFrame = tk.Frame(root, bg="#282923")
 img = ImageTk.PhotoImage(Image.open("coss.png"))
 homeBtn = tk.Button(root, text="Home", padx=10, pady=5, fg="black", bg="grey", height=1, width=4, command=openHome)
 runBtn = tk.Button(root, text="Run", padx=10, pady=5, fg="black", bg="grey", height=1, width=4, command=openRun)
@@ -101,12 +116,13 @@ aboutBtn = tk.Button(root, text="About", padx=10, pady=5, fg="black", bg="grey",
 historyBtn = tk.Button(root, text="History", padx=10, pady=5, fg="black", bg="grey", height=1, width=4, command=openHistory)
 
 #Define Home page UI elements
-homeInfo = tk.Text(homeFrame, relief=FLAT, fg="white", bg="#282923", height=18, width=47)
+homeInfo = tk.Text(homeFrame, relief=FLAT, fg="white", bg="#282923", height=24, width=47)
 homeInfo.pack()
 homeInfo.insert(tk.END, "\nWelcome to the 1Click COSS Bot\n\nTo get started please first customize your bot\nsettings from the settings tab")
 homeInfo.insert(tk.END, "\n\nOnce configured you can run the bot from the\nrun tab")
-homeInfo.insert(tk.END, "\n\nLatest Updates\n--------------\n - First live build of 1Click COSS bot\n - Added support for grid strategy\n - Added Settings page to customize bot\n - Added History page to keep track of trades\n - Added UI for ease of use")
-
+homeInfo.insert(tk.END, "\n\nLatest Updates (11/21/2019)\n---------------------------\n - First live build of 1Click COSS bot\n - Added support for grid strategy\n - Added Settings page to customize bot\n - Added History page to keep track of trades\n - Added UI for ease of use")
+homeInfo.insert(tk.END, "\n\nTrading is very risky, the use of this tool may\nresult in significant losses")
+homeInfo.insert(tk.END, "\n\nFor the best security and to protect your\nprimary COSS account, always create a second\naccount for use with public trading bots.")
 
 #Define Settings page UI elements
 tk.Label(settingsFrame, text="", bg="#282923").grid(row=0)
@@ -150,20 +166,39 @@ tradingStratOptions = [
 ]
 tradingStrat = StringVar(settingsFrame)
 tradingStrat.set(tradingStratOptions[0]) # initial value
-stratMenu = OptionMenu(*(settingsFrame, tradingStrat) + tuple(tradingStratOptions))
+stratMenu = OptionMenu(*(settingsFrame, tradingStrat) + tuple(tradingStratOptions), command=stratMenuChanged)
 stratMenu.config(bg="#282923", fg="white", relief=FLAT)
 stratMenu["menu"].config(bg="#282923", fg="white", relief=FLAT)
 stratMenu["highlightthickness"]=0
 stratMenu.grid(row=5, column=1)
 
+#Define GRID UI elements for GRID Strategy Frame
+gridStratFrame = tk.Frame(root, bg="#182923")
+tk.Label(gridStratFrame, text="                         ", bg="#182923").grid(row=0, column=1)
+tradePairBalanceLabel = tk.Label(gridStratFrame, text="    Trade Balance")
+tradePairBalanceLabel.config(relief=FLAT, bg="#182923", fg="white")
+tradePairBalanceLabel.grid(row=1, column=0)
+tradePairBalanceBox = tk.Entry(gridStratFrame, width=18)
+tradePairBalanceBox.grid(row=1, column=2)
+quotePairBalanceLabel = tk.Label(gridStratFrame, text="    Quote Balance (" + tradingPair.get().split('_')[1] + ")")
+quotePairBalanceLabel.config(relief=FLAT, bg="#182923", fg="white")
+quotePairBalanceLabel.grid(row=2, column=0)
+quotePairBalanceBox = tk.Entry(gridStratFrame, width=18)
+quotePairBalanceBox.grid(row=2, column=2)
+#numberOfGrids 
+#gridOrderSize
+#gridLowerPrice
+#gridUpperPrice
+
 #Define Run page UI elements
 
 #Define About page UI elements
-aboutInfo = tk.Text(aboutFrame, relief=FLAT, fg="white", bg="#282923", height=18, width=47)
+aboutInfo = tk.Text(aboutFrame, relief=FLAT, fg="white", bg="#282923", height=24, width=47)
 aboutInfo.pack()
 aboutInfo.insert(tk.END, "\nBot created by Omer \nTelegram: @omer259\nReddit: https://www.reddit.com/user/Omer259/")
 aboutInfo.insert(tk.END, "\n\nBitcoin Donation Address: \nbc1qnjcnhcex50659vxnuhdkuzhhu4m0ewmx6p43j2")
 aboutInfo.insert(tk.END, "\n\nEthereum Donation Address: \n0xE9b79A87520DFB16824d9AfC40a7d8bC1a81a753")
+aboutInfo.insert(tk.END, "\n\nAll trading performed using this bot is\nat your own risk. I will not be held\nresponsible for any gains or losses caused by\nthe use of this tool")
 
 #Define History page UI elements
 
