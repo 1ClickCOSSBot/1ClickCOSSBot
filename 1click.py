@@ -88,6 +88,8 @@ def tradingPairChanged(event):
 	'''
 	tradePairBalanceLabel.config(text="    Base Balance (" + tradingPair.get().split('_')[0] + ")")
 	quotePairBalanceLabel.config(text="    Quote Balance (" + tradingPair.get().split('_')[1] + ")")
+	orderSizeLabel.config(text="    Order Size (" + tradingPair.get().split('_')[1] + ")")
+
 
 def stratMenuChanged(event):
 	'''
@@ -131,6 +133,7 @@ homeInfo.insert(tk.END, "\n\nOnce configured you can run the bot from the\nrun t
 homeInfo.insert(tk.END, "\n\nLatest Updates (11/21/2019)\n---------------------------\n - First live build of 1Click COSS bot\n - Added support for grid strategy\n - Added Settings page to customize bot\n - Added History page to keep track of trades\n - Added UI for ease of use")
 homeInfo.insert(tk.END, "\n\nTrading is very risky, the use of this tool may\nresult in significant losses")
 homeInfo.insert(tk.END, "\n\nFor the best security and to protect your\nprimary COSS account, always create a second\naccount for use with public trading bots.")
+homeInfo.config(state="disabled")
 
 #Define Settings page UI elements
 tk.Label(settingsFrame, text="", bg="#282923").grid(row=0)
@@ -183,24 +186,42 @@ stratMenu.grid(row=5, column=1)
 #Define GRID UI elements for GRID Strategy Frame
 gridStratFrame = tk.Frame(root, bg="#182923")
 tk.Label(gridStratFrame, text="                         ", bg="#182923").grid(row=0, column=1)
+tk.Label(gridStratFrame, text="Available Balances", bg="#182923", fg="white").grid(row=1, column=1)
+
 tradePairBalanceLabel = tk.Label(gridStratFrame, text="    Base Balance (" + tradingPair.get().split('_')[0] + ")")
 tradePairBalanceLabel.config(relief=FLAT, bg="#182923", fg="white")
-tradePairBalanceLabel.grid(row=1, column=0)
-tradePairBalanceBox = tk.Entry(gridStratFrame, width=18)
-tradePairBalanceBox.grid(row=1, column=2)
+tradePairBalanceLabel.grid(row=2, column=0)
+tradePairBalanceBox = tk.Text(gridStratFrame, width=8, height=1)
+tradePairBalanceBox.insert(tk.END, "30000")
+tradePairBalanceBox.config(state="disabled", bg="#182923", fg="white")
+tradePairBalanceBox.grid(row=2, column=2)
+
 quotePairBalanceLabel = tk.Label(gridStratFrame, text="    Quote Balance (" + tradingPair.get().split('_')[1] + ")")
 quotePairBalanceLabel.config(relief=FLAT, bg="#182923", fg="white")
-quotePairBalanceLabel.grid(row=2, column=0)
-quotePairBalanceBox = tk.Entry(gridStratFrame, width=18)
-quotePairBalanceBox.grid(row=2, column=2)
+quotePairBalanceLabel.grid(row=3, column=0)
+quotePairBalanceBox = tk.Text(gridStratFrame, width=8, height=1)
+quotePairBalanceBox.insert(tk.END, "2.67")
+quotePairBalanceBox.config(state="disabled", bg="#182923", fg="white")
+quotePairBalanceBox.grid(row=3, column=2)
+
+tk.Label(gridStratFrame, text="                         ", bg="#182923").grid(row=4, column=1)
+
+orderSizeLabel = tk.Label(gridStratFrame, text="    Order Size (" + tradingPair.get().split('_')[1] + ")")
+orderSizeLabel.config(relief=FLAT, bg="#182923", fg="white")
+orderSizeLabel.grid(row=5, column=0)
+quoteSizeBox = tk.Text(gridStratFrame, width=8, height=1)
+quoteSizeBox.insert(tk.END, "0.015")
+quoteSizeBox.config(bg="#352923", fg="white")
+quoteSizeBox.grid(row=5, column=2)
+
+
 gridNumberLabel = tk.Label(gridStratFrame, text="    Number Of Grids")
 gridNumberLabel.config(relief=FLAT, bg="#182923", fg="white")
-gridNumberLabel.grid(row=3, column=0)
+gridNumberLabel.grid(row=6, column=0)
 numberOfGrids = Scale(gridStratFrame, from_=2, to=200, resolution=2, orient=HORIZONTAL, bg="#182923", fg="white", relief=FLAT)
 numberOfGrids["highlightthickness"]=0
-numberOfGrids.grid(row=3, column=2)
-#numberOfGrids 
-#gridOrderSize
+numberOfGrids.grid(row=6, column=2)
+
 #gridLowerPrice
 #gridUpperPrice
 
@@ -213,6 +234,7 @@ aboutInfo.insert(tk.END, "\nBot created by Omer \nTelegram: @omer259\nReddit: ht
 aboutInfo.insert(tk.END, "\n\nBitcoin Donation Address: \nbc1qnjcnhcex50659vxnuhdkuzhhu4m0ewmx6p43j2")
 aboutInfo.insert(tk.END, "\n\nEthereum Donation Address: \n0xE9b79A87520DFB16824d9AfC40a7d8bC1a81a753")
 aboutInfo.insert(tk.END, "\n\nAll trading performed using this bot is\nat your own risk. I will not be held\nresponsible for any gains or losses caused by\nthe use of this tool")
+aboutInfo.config(state="disabled")
 
 #Define History page UI elements
 
