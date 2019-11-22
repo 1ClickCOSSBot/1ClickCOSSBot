@@ -53,7 +53,7 @@ def openSettings():
 	clearFrames()
 	settingsBtn.config(relief=SUNKEN)
 	settingsFrame.place(relwidth=FRAMEHEIGHT, relheight=FRAMEWIDTH, relx=FRAMEPADX, rely=FRAMEPADY)
-	gridStratFrame.place(relwidth=FRAMEWIDTH*0.9, relheight=FRAMEHEIGHT/1.7, relx=FRAMEPADX*1.4, rely=FRAMEPADY*2.95)
+	gridStratFrame.place(relwidth=FRAMEWIDTH*0.9, relheight=FRAMEHEIGHT/1.7, relx=FRAMEPADX*1.4, rely=FRAMEPADY*3.1)
 
 #Create function for run button
 def openRun():
@@ -82,22 +82,30 @@ def openHistory():
 	historyBtn.config(relief=SUNKEN)
 	historyFrame.place(relwidth=FRAMEHEIGHT, relheight=FRAMEWIDTH, relx=FRAMEPADX, rely=FRAMEPADY)
 
+def tradingPairChanged(event):
+	'''
+	Update settings page with new trading pair
+	'''
+	tradePairBalanceLabel.config(text="    Base Balance (" + tradingPair.get().split('_')[0] + ")")
+	quotePairBalanceLabel.config(text="    Quote Balance (" + tradingPair.get().split('_')[1] + ")")
+
 def stratMenuChanged(event):
 	'''
 	Update settings UI to reflect changed strategy
 	'''
 	if tradingStrat.get() == "Buy Low Sell High":
-		print("This strategy is not yet supported!")
 		gridStratFrame.place_forget()
 	elif tradingStrat.get() == "GRID MM":
-		print("Setting up UI for GRID strategy")
 		gridStratFrame.place(relwidth=FRAMEWIDTH*0.9, relheight=FRAMEHEIGHT/1.7, relx=FRAMEPADX*1.35, rely=FRAMEPADY*2.95)
 	#print("Strategy was changed to " + tradingStrat.get())
 
 #Create the root UI
 root = tk.Tk()
-root.configure(bg='#282923')
+#root.configure(bg='#282923')
 root.resizable(False, False)
+root.attributes('-alpha', 0.95)
+if os.name == "nt":
+	root.attributes('-alpha', 0.97)
 
 #Define Main UI elements
 canvas = tk.Canvas(root, height=CANVASHEIGHT, width=CANVASWIDTH, bg="#000000")
@@ -151,7 +159,7 @@ tradingPairOptions = [
 ]
 tradingPair = StringVar(settingsFrame)
 tradingPair.set(tradingPairOptions[0]) # initial value
-pairMenu = OptionMenu(*(settingsFrame, tradingPair) + tuple(tradingPairOptions))
+pairMenu = OptionMenu(*(settingsFrame, tradingPair) + tuple(tradingPairOptions), command=tradingPairChanged)
 pairMenu.config(bg="#282923", fg="white", relief=FLAT)
 pairMenu["menu"].config(bg="#282923", fg="white", relief=FLAT)
 pairMenu["highlightthickness"]=0
@@ -175,7 +183,7 @@ stratMenu.grid(row=5, column=1)
 #Define GRID UI elements for GRID Strategy Frame
 gridStratFrame = tk.Frame(root, bg="#182923")
 tk.Label(gridStratFrame, text="                         ", bg="#182923").grid(row=0, column=1)
-tradePairBalanceLabel = tk.Label(gridStratFrame, text="    Trade Balance")
+tradePairBalanceLabel = tk.Label(gridStratFrame, text="    Base Balance (" + tradingPair.get().split('_')[0] + ")")
 tradePairBalanceLabel.config(relief=FLAT, bg="#182923", fg="white")
 tradePairBalanceLabel.grid(row=1, column=0)
 tradePairBalanceBox = tk.Entry(gridStratFrame, width=18)
