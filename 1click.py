@@ -104,7 +104,7 @@ def stratMenuChanged(event):
 		messagebox.showinfo("Alert", "This strategy is not yet supported")
 	elif tradingStrat.get() == "GRID MM":
 		blStratFrame.place_forget()
-		gridStratFrame.place(relwidth=FRAMEWIDTH*0.9, relheight=FRAMEHEIGHT/1.7, relx=FRAMEPADX*1.35, rely=FRAMEPADY*2.95)
+		gridStratFrame.place(relwidth=FRAMEWIDTH*0.9, relheight=FRAMEHEIGHT/1.9, relx=FRAMEPADX*1.4, rely=FRAMEPADY*3.1)
 	#print("Strategy was changed to " + tradingStrat.get())
 
 def saveStrategy():
