@@ -193,6 +193,12 @@ quotePairBalanceLabel.config(relief=FLAT, bg="#182923", fg="white")
 quotePairBalanceLabel.grid(row=2, column=0)
 quotePairBalanceBox = tk.Entry(gridStratFrame, width=18)
 quotePairBalanceBox.grid(row=2, column=2)
+gridNumberLabel = tk.Label(gridStratFrame, text="    Number Of Grids")
+gridNumberLabel.config(relief=FLAT, bg="#182923", fg="white")
+gridNumberLabel.grid(row=3, column=0)
+numberOfGrids = Scale(gridStratFrame, from_=2, to=200, resolution=2, orient=HORIZONTAL, bg="#182923", fg="white", relief=FLAT)
+numberOfGrids["highlightthickness"]=0
+numberOfGrids.grid(row=3, column=2)
 #numberOfGrids 
 #gridOrderSize
 #gridLowerPrice
