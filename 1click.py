@@ -1,6 +1,7 @@
 import os, sys
 import tkinter as tk
 from tkinter import *
+from tkinter import messagebox
 from PIL import Image, ImageTk
 
 '''
@@ -31,11 +32,11 @@ def clearFrames():
 	historyFrame.place_forget()
 	gridStratFrame.place_forget()
 	blStratFrame.place_forget()
-	homeBtn.config(relief=RAISED)
-	runBtn.config(relief=RAISED)
-	settingsBtn.config(relief=RAISED)
-	aboutBtn.config(relief=RAISED)
-	historyBtn.config(relief=RAISED)
+	homeBtn.config(bg="grey", fg="black")
+	runBtn.config(bg="grey", fg="black")
+	settingsBtn.config(bg="grey", fg="black")
+	aboutBtn.config(bg="grey", fg="black")
+	historyBtn.config(bg="grey", fg="black")
 
 #Create function for run button
 def openHome():
@@ -43,7 +44,7 @@ def openHome():
 	Switches frames to the home tab
 	'''	
 	clearFrames()
-	homeBtn.config(relief=SUNKEN)
+	homeBtn.config(bg="blue", fg="white")
 	homeFrame.place(relwidth=FRAMEHEIGHT, relheight=FRAMEWIDTH, relx=FRAMEPADX, rely=FRAMEPADY)
 
 #Create function for settings button
@@ -52,9 +53,9 @@ def openSettings():
 	Switches frames to the settings tab
 	'''	
 	clearFrames()
-	settingsBtn.config(relief=SUNKEN)
+	settingsBtn.config(bg="blue", fg="white")
 	settingsFrame.place(relwidth=FRAMEHEIGHT, relheight=FRAMEWIDTH, relx=FRAMEPADX, rely=FRAMEPADY)
-	gridStratFrame.place(relwidth=FRAMEWIDTH*0.9, relheight=FRAMEHEIGHT/1.7, relx=FRAMEPADX*1.4, rely=FRAMEPADY*3.1)
+	gridStratFrame.place(relwidth=FRAMEWIDTH*0.9, relheight=FRAMEHEIGHT/1.9, relx=FRAMEPADX*1.4, rely=FRAMEPADY*3.1)
 
 #Create function for run button
 def openRun():
@@ -62,7 +63,7 @@ def openRun():
 	Switches frames to the run tab
 	'''	
 	clearFrames()
-	runBtn.config(relief=SUNKEN)
+	runBtn.config(bg="blue", fg="white")
 	runFrame.place(relwidth=FRAMEHEIGHT, relheight=FRAMEWIDTH, relx=FRAMEPADX, rely=FRAMEPADY)
 
 #Create function for about button
@@ -71,7 +72,7 @@ def openAbout():
 	Switches frames to the about tab
 	'''	
 	clearFrames()
-	aboutBtn.config(relief=SUNKEN)
+	aboutBtn.config(bg="blue", fg="white")
 	aboutFrame.place(relwidth=FRAMEHEIGHT, relheight=FRAMEWIDTH, relx=FRAMEPADX, rely=FRAMEPADY)
 
 #Create function for history button
@@ -80,7 +81,7 @@ def openHistory():
 	Switches frames to the about tab
 	'''	
 	clearFrames()
-	historyBtn.config(relief=SUNKEN)
+	historyBtn.config(bg="blue", fg="white")
 	historyFrame.place(relwidth=FRAMEHEIGHT, relheight=FRAMEWIDTH, relx=FRAMEPADX, rely=FRAMEPADY)
 
 def tradingPairChanged(event):
@@ -99,12 +100,16 @@ def stratMenuChanged(event):
 	Update settings UI to reflect changed strategy
 	'''
 	if tradingStrat.get() == "Buy Low Sell High":
-		gridStratFrame.place_forget()
-		blStratFrame.place(relwidth=FRAMEWIDTH*0.9, relheight=FRAMEHEIGHT/1.7, relx=FRAMEPADX*1.35, rely=FRAMEPADY*2.95)
+		tradingStrat.set(tradingStratOptions[0])
+		messagebox.showinfo("Alert", "This strategy is not yet supported")
 	elif tradingStrat.get() == "GRID MM":
 		blStratFrame.place_forget()
 		gridStratFrame.place(relwidth=FRAMEWIDTH*0.9, relheight=FRAMEHEIGHT/1.7, relx=FRAMEPADX*1.35, rely=FRAMEPADY*2.95)
 	#print("Strategy was changed to " + tradingStrat.get())
+
+def saveStrategy():
+	messagebox.showinfo("Saved", "Your strategy settings have been applied")
+	openRun()
 
 #Create the root UI
 root = tk.Tk()
@@ -123,11 +128,11 @@ aboutFrame = tk.Frame(root,bg="#282923")
 historyFrame = tk.Frame(root,bg="#282923")
 notificationFrame = tk.Frame(root, bg="#282923")
 img = ImageTk.PhotoImage(Image.open("coss.png"))
-homeBtn = tk.Button(root, text="Home", padx=10, pady=5, fg="black", bg="grey", height=1, width=4, command=openHome)
-runBtn = tk.Button(root, text="Run", padx=10, pady=5, fg="black", bg="grey", height=1, width=4, command=openRun)
-settingsBtn = tk.Button(root, text="Settings", padx=10, pady=5, fg="black", bg="grey", height=1, width=4, command=openSettings)
-aboutBtn = tk.Button(root, text="About", padx=10, pady=5, fg="black", bg="grey", height=1, width=4, command=openAbout)
-historyBtn = tk.Button(root, text="History", padx=10, pady=5, fg="black", bg="grey", height=1, width=4, command=openHistory)
+homeBtn = tk.Button(root, text="Home", padx=10, pady=5, fg="white", bg="blue", height=1, width=4, command=openHome, relief=FLAT)
+runBtn = tk.Button(root, text="Run", padx=10, pady=5, fg="black", bg="grey", height=1, width=4, command=openRun, relief=FLAT)
+settingsBtn = tk.Button(root, text="Settings", padx=10, pady=5, fg="black", bg="grey", height=1, width=4, command=openSettings, relief=FLAT)
+aboutBtn = tk.Button(root, text="About", padx=10, pady=5, fg="black", bg="grey", height=1, width=4, command=openAbout, relief=FLAT)
+historyBtn = tk.Button(root, text="History", padx=10, pady=5, fg="black", bg="grey", height=1, width=4, command=openHistory, relief=FLAT)
 
 #Define Home page UI elements
 homeInfo = tk.Text(homeFrame, relief=FLAT, fg="white", bg="#282923", height=24, width=47)
@@ -187,6 +192,13 @@ stratMenu.config(bg="#282923", fg="white", relief=FLAT)
 stratMenu["menu"].config(bg="#282923", fg="white", relief=FLAT)
 stratMenu["highlightthickness"]=0
 stratMenu.grid(row=5, column=1)
+
+#Define bottom frame for Settings page apply button
+saveStratFrame = tk.Frame(settingsFrame, bg="#282923")
+saveStratFrame.place(relwidth=FRAMEWIDTH*1.25, relheight=FRAMEHEIGHT/6.5, relx=0, rely=FRAMEPADY*7.2)
+saveBtn = tk.Button(saveStratFrame, text="Save", padx=10, pady=5, fg="black", bg="grey", height=1, width=4, command=saveStrategy, relief=FLAT)
+saveBtn.pack()
+#tk.Label(saveStratFrame, text="This strategy is not yet implemented", bg="#482923", fg="white").pack()
 
 #Define UI elements for Buy Low Sell High Strategy Frame
 blStratFrame = tk.Frame(root, bg="#482923")
@@ -279,7 +291,7 @@ canvas.pack()
 btnFrame.place(relwidth=0.8, relheight=0.05, relx=0.1, rely=0.075)
 homeFrame.place(relwidth=FRAMEWIDTH, relheight=FRAMEHEIGHT, relx=FRAMEPADX, rely=FRAMEPADY)
 homeBtn.pack(in_=btnFrame, side=LEFT)
-homeBtn.config(relief=SUNKEN)
+homeBtn.config(bg="blue")
 runBtn.pack(in_=btnFrame, side=LEFT)
 settingsBtn.pack(in_=btnFrame, side=LEFT)
 historyBtn.pack(in_=btnFrame, side=LEFT)
