@@ -30,6 +30,7 @@ def clearFrames():
 	aboutFrame.place_forget()
 	historyFrame.place_forget()
 	gridStratFrame.place_forget()
+	blStratFrame.place_forget()
 	homeBtn.config(relief=RAISED)
 	runBtn.config(relief=RAISED)
 	settingsBtn.config(relief=RAISED)
@@ -90,6 +91,7 @@ def tradingPairChanged(event):
 	quotePairBalanceLabel.config(text="    Quote Balance (" + tradingPair.get().split('_')[1] + ")")
 	orderSizeLabel.config(text="    Order Size (" + tradingPair.get().split('_')[1] + ")")
 	priceRangeLabel.config(text="    Price Range (" + tradingPair.get().split('_')[1] + ")")
+	gridDistanceLabel.config(text="    Grid Distance (" + tradingPair.get().split('_')[1] + ")")
 
 
 def stratMenuChanged(event):
@@ -98,7 +100,9 @@ def stratMenuChanged(event):
 	'''
 	if tradingStrat.get() == "Buy Low Sell High":
 		gridStratFrame.place_forget()
+		blStratFrame.place(relwidth=FRAMEWIDTH*0.9, relheight=FRAMEHEIGHT/1.7, relx=FRAMEPADX*1.35, rely=FRAMEPADY*2.95)
 	elif tradingStrat.get() == "GRID MM":
+		blStratFrame.place_forget()
 		gridStratFrame.place(relwidth=FRAMEWIDTH*0.9, relheight=FRAMEHEIGHT/1.7, relx=FRAMEPADX*1.35, rely=FRAMEPADY*2.95)
 	#print("Strategy was changed to " + tradingStrat.get())
 
@@ -158,7 +162,8 @@ tradingPairText.grid(row=4, column=0)
 tradingPairOptions = [
     "COS_ETH",
     "COS_BTC",
-    "ETH_BTC"
+    "ETH_BTC",
+    "SATTY_USDT"
 ]
 tradingPair = StringVar(settingsFrame)
 tradingPair.set(tradingPairOptions[0]) # initial value
@@ -183,7 +188,11 @@ stratMenu["menu"].config(bg="#282923", fg="white", relief=FLAT)
 stratMenu["highlightthickness"]=0
 stratMenu.grid(row=5, column=1)
 
-#Define GRID UI elements for GRID Strategy Frame
+#Define UI elements for Buy Low Sell High Strategy Frame
+blStratFrame = tk.Frame(root, bg="#482923")
+tk.Label(blStratFrame, text="This strategy is not yet implemented", bg="#482923", fg="white").pack()
+
+#Define UI elements for GRID Strategy Frame
 gridStratFrame = tk.Frame(root, bg="#182923")
 tk.Label(gridStratFrame, text="                         ", bg="#182923").grid(row=0, column=1)
 tk.Label(gridStratFrame, text="Available Balances", bg="#182923", fg="white", font='Helvetica 8 bold').grid(row=1, column=1)
@@ -215,24 +224,32 @@ quoteSizeBox.insert(tk.END, "0.015")
 quoteSizeBox.config(bg="#352923", fg="white")
 quoteSizeBox.grid(row=6, column=2)
 
+gridDistanceLabel = tk.Label(gridStratFrame, text="    Grid Distance (" + tradingPair.get().split('_')[1] + ")")
+gridDistanceLabel.config(relief=FLAT, bg="#182923", fg="white")
+gridDistanceLabel.grid(row=7, column=0)
+gridDistanceBox = tk.Text(gridStratFrame, width=12, height=1)
+gridDistanceBox.insert(tk.END, "0.000001")
+gridDistanceBox.config(bg="#352923", fg="white")
+gridDistanceBox.grid(row=7, column=2)
+
 priceRangeLabel = tk.Label(gridStratFrame, text="    Price Range (" + tradingPair.get().split('_')[1] + ")")
 priceRangeLabel.config(relief=FLAT, bg="#182923", fg="white")
-priceRangeLabel.grid(row=7, column=0)
+priceRangeLabel.grid(row=8, column=0)
 lowerPriceBox = tk.Text(gridStratFrame, width=12, height=1)
 lowerPriceBox.insert(tk.END, "0.000065")
 lowerPriceBox.config(bg="#722123", fg="white")
-lowerPriceBox.grid(row=7, column=1)
+lowerPriceBox.grid(row=8, column=1)
 higherPriceBox = tk.Text(gridStratFrame, width=12, height=1)
 higherPriceBox.insert(tk.END, "0.000095")
 higherPriceBox.config(bg="#001923", fg="white")
-higherPriceBox.grid(row=7, column=2)
+higherPriceBox.grid(row=8, column=2)
 
 gridNumberLabel = tk.Label(gridStratFrame, text="    Number Of Grids")
 gridNumberLabel.config(relief=FLAT, bg="#182923", fg="white")
-gridNumberLabel.grid(row=8, column=0)
+gridNumberLabel.grid(row=9, column=0)
 numberOfGrids = Scale(gridStratFrame, from_=2, to=200, resolution=2, orient=HORIZONTAL, bg="#182923", fg="white", relief=FLAT)
 numberOfGrids["highlightthickness"]=0
-numberOfGrids.grid(row=8, column=2)
+numberOfGrids.grid(row=9, column=2)
 
 #gridLowerPrice
 #gridUpperPrice
