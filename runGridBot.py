@@ -18,12 +18,13 @@ print(coss_ob["bids"][0])
 
 # Load Grid Settings: publicKey, privateKey, orderSize, gridDistance, lowerPrice, higherPrice, numberOfGrids
 with open('gridSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
-    publicKey, privateKey, orderSize, gridDistance, lowerPrice, higherPrice, numberOfGrids = pickle.load(f)
+    tradePair, publicKey, privateKey, orderSize, gridDistance, lowerPrice, higherPrice, numberOfGrids = pickle.load(f)
 
+print("Trading Pair is: " + tradePair)
 print("Public Key is: " + publicKey)
 print("Private Key is: " + privateKey)
 print("Order Size is: " + orderSize)
 print("Seperation between grids is: " + gridDistance)
 print("Lower grid price is: " + lowerPrice)
 print("Upper grid price is: " + higherPrice)
-print("Number of grids to set: " + numberOfGrids)
+print("Number of grids are: " + str(numberOfGrids))

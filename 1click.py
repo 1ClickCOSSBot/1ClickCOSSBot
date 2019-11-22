@@ -60,6 +60,30 @@ def openSettings():
 	settingsFrame.place(relwidth=FRAMEHEIGHT, relheight=FRAMEWIDTH, relx=FRAMEPADX, rely=FRAMEPADY)
 	gridStratFrame.place(relwidth=FRAMEWIDTH*0.9, relheight=FRAMEHEIGHT/1.9, relx=FRAMEPADX*1.4, rely=FRAMEPADY*3.1)
 
+	#Load all grid strategy settings
+	# Load Grid Settings: publicKey, privateKey, orderSize, gridDistance, lowerPrice, higherPrice, numberOfGrids
+	with open('gridSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
+		tradePair, publicKey, privateKey, orderSize, gridDistance, lowerPrice, higherPrice, numberOfGrids = pickle.load(f)
+	tradingPair.set(tradePair)
+	publicAPIKeyBox.delete(0, tk.END)
+	publicAPIKeyBox.insert(tk.END, publicKey)
+	privateAPIKeyBox.delete(0, tk.END)
+	privateAPIKeyBox.insert(tk.END, privateKey)
+	orderSizeBox.delete('1.0', tk.END)
+	orderSizeBox.insert(tk.END, orderSize)
+	gridDistanceBox.delete('1.0', tk.END)
+	gridDistanceBox.insert(tk.END, gridDistance)
+	lowerPriceBox.delete('1.0', tk.END)
+	lowerPriceBox.insert(tk.END, lowerPrice)
+	higherPriceBox.delete('1.0', tk.END)
+	higherPriceBox.insert(tk.END, higherPrice)
+
+	tradePairBalanceLabel.config(text="    Base Balance (" + tradingPair.get().split('_')[0] + ")")
+	quotePairBalanceLabel.config(text="    Quote Balance (" + tradingPair.get().split('_')[1] + ")")
+	orderSizeLabel.config(text="    Order Size (" + tradingPair.get().split('_')[1] + ")")
+	priceRangeLabel.config(text="    Price Range (" + tradingPair.get().split('_')[1] + ")")
+	gridDistanceLabel.config(text="    Grid Distance (" + tradingPair.get().split('_')[1] + ")")
+
 #Create function for run button
 def openRun():
 	'''
@@ -114,7 +138,7 @@ def saveStrategy():
 
 	#Save all settings to gridSettings.conf
 	with open('gridSettings.conf', 'wb') as f:
-	    pickle.dump([publicAPIKeyBox.get(), privateAPIKeyBox.get(), orderSizeBox.get(), gridDistanceBox.get(), lowerPriceBox.get(), higherPriceBox.get(), numberOfGrids.get()], f)
+	    pickle.dump([tradingPair.get().strip(), publicAPIKeyBox.get().strip(), privateAPIKeyBox.get().strip(), orderSizeBox.get("1.0", tk.END).strip(), gridDistanceBox.get("1.0", tk.END).strip(), lowerPriceBox.get("1.0", tk.END).strip(), higherPriceBox.get("1.0", tk.END).strip(), numberOfGrids.get()], f)
 
 	messagebox.showinfo("Saved", "Your strategy settings have been applied")
 	openRun()
