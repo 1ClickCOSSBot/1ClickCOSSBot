@@ -1,4 +1,5 @@
 import os, sys
+import pickle
 import tkinter as tk
 from tkinter import *
 from tkinter import messagebox
@@ -7,10 +8,12 @@ from PIL import Image, ImageTk
 '''
 Pre-Reqs
 --------
-pip install Pillow
+Download and install python3 with pip
+In a console or terminal run:
+	pip install Pillow
+	pip install requests
 
 Once all packages are installed please run this python script to start the UI
-
 '''
 
 #StaticVariables
@@ -108,6 +111,11 @@ def stratMenuChanged(event):
 	#print("Strategy was changed to " + tradingStrat.get())
 
 def saveStrategy():
+
+	#Save all settings to gridSettings.conf
+	with open('gridSettings.conf', 'wb') as f:
+	    pickle.dump([publicAPIKeyBox.get(), privateAPIKeyBox.get(), orderSizeBox.get(), gridDistanceBox.get(), lowerPriceBox.get(), higherPriceBox.get(), numberOfGrids.get()], f)
+
 	messagebox.showinfo("Saved", "Your strategy settings have been applied")
 	openRun()
 
@@ -231,10 +239,10 @@ tk.Label(gridStratFrame, text="Grid Settings", bg="#182923", fg="white", font='H
 orderSizeLabel = tk.Label(gridStratFrame, text="    Order Size (" + tradingPair.get().split('_')[1] + ")")
 orderSizeLabel.config(relief=FLAT, bg="#182923", fg="white")
 orderSizeLabel.grid(row=6, column=0)
-quoteSizeBox = tk.Text(gridStratFrame, width=12, height=1)
-quoteSizeBox.insert(tk.END, "0.015")
-quoteSizeBox.config(bg="#352923", fg="white")
-quoteSizeBox.grid(row=6, column=2)
+orderSizeBox = tk.Text(gridStratFrame, width=12, height=1)
+orderSizeBox.insert(tk.END, "0.015")
+orderSizeBox.config(bg="#352923", fg="white")
+orderSizeBox.grid(row=6, column=2)
 
 gridDistanceLabel = tk.Label(gridStratFrame, text="    Grid Distance (" + tradingPair.get().split('_')[1] + ")")
 gridDistanceLabel.config(relief=FLAT, bg="#182923", fg="white")
