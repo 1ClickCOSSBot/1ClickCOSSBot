@@ -89,6 +89,7 @@ def tradingPairChanged(event):
 	tradePairBalanceLabel.config(text="    Base Balance (" + tradingPair.get().split('_')[0] + ")")
 	quotePairBalanceLabel.config(text="    Quote Balance (" + tradingPair.get().split('_')[1] + ")")
 	orderSizeLabel.config(text="    Order Size (" + tradingPair.get().split('_')[1] + ")")
+	priceRangeLabel.config(text="    Price Range (" + tradingPair.get().split('_')[1] + ")")
 
 
 def stratMenuChanged(event):
@@ -105,7 +106,6 @@ def stratMenuChanged(event):
 root = tk.Tk()
 #root.configure(bg='#282923')
 root.resizable(False, False)
-root.attributes('-alpha', 0.95)
 if os.name == "nt":
 	root.attributes('-alpha', 0.97)
 
@@ -186,12 +186,12 @@ stratMenu.grid(row=5, column=1)
 #Define GRID UI elements for GRID Strategy Frame
 gridStratFrame = tk.Frame(root, bg="#182923")
 tk.Label(gridStratFrame, text="                         ", bg="#182923").grid(row=0, column=1)
-tk.Label(gridStratFrame, text="Available Balances", bg="#182923", fg="white").grid(row=1, column=1)
+tk.Label(gridStratFrame, text="Available Balances", bg="#182923", fg="white", font='Helvetica 8 bold').grid(row=1, column=1)
 
 tradePairBalanceLabel = tk.Label(gridStratFrame, text="    Base Balance (" + tradingPair.get().split('_')[0] + ")")
 tradePairBalanceLabel.config(relief=FLAT, bg="#182923", fg="white")
 tradePairBalanceLabel.grid(row=2, column=0)
-tradePairBalanceBox = tk.Text(gridStratFrame, width=8, height=1)
+tradePairBalanceBox = tk.Text(gridStratFrame, width=12, height=1)
 tradePairBalanceBox.insert(tk.END, "30000")
 tradePairBalanceBox.config(state="disabled", bg="#182923", fg="white")
 tradePairBalanceBox.grid(row=2, column=2)
@@ -199,28 +199,40 @@ tradePairBalanceBox.grid(row=2, column=2)
 quotePairBalanceLabel = tk.Label(gridStratFrame, text="    Quote Balance (" + tradingPair.get().split('_')[1] + ")")
 quotePairBalanceLabel.config(relief=FLAT, bg="#182923", fg="white")
 quotePairBalanceLabel.grid(row=3, column=0)
-quotePairBalanceBox = tk.Text(gridStratFrame, width=8, height=1)
+quotePairBalanceBox = tk.Text(gridStratFrame, width=12, height=1)
 quotePairBalanceBox.insert(tk.END, "2.67")
 quotePairBalanceBox.config(state="disabled", bg="#182923", fg="white")
 quotePairBalanceBox.grid(row=3, column=2)
 
 tk.Label(gridStratFrame, text="                         ", bg="#182923").grid(row=4, column=1)
+tk.Label(gridStratFrame, text="Grid Settings", bg="#182923", fg="white", font='Helvetica 8 bold').grid(row=5, column=1)
 
 orderSizeLabel = tk.Label(gridStratFrame, text="    Order Size (" + tradingPair.get().split('_')[1] + ")")
 orderSizeLabel.config(relief=FLAT, bg="#182923", fg="white")
-orderSizeLabel.grid(row=5, column=0)
-quoteSizeBox = tk.Text(gridStratFrame, width=8, height=1)
+orderSizeLabel.grid(row=6, column=0)
+quoteSizeBox = tk.Text(gridStratFrame, width=12, height=1)
 quoteSizeBox.insert(tk.END, "0.015")
 quoteSizeBox.config(bg="#352923", fg="white")
-quoteSizeBox.grid(row=5, column=2)
+quoteSizeBox.grid(row=6, column=2)
 
+priceRangeLabel = tk.Label(gridStratFrame, text="    Price Range (" + tradingPair.get().split('_')[1] + ")")
+priceRangeLabel.config(relief=FLAT, bg="#182923", fg="white")
+priceRangeLabel.grid(row=7, column=0)
+lowerPriceBox = tk.Text(gridStratFrame, width=12, height=1)
+lowerPriceBox.insert(tk.END, "0.000065")
+lowerPriceBox.config(bg="#722123", fg="white")
+lowerPriceBox.grid(row=7, column=1)
+higherPriceBox = tk.Text(gridStratFrame, width=12, height=1)
+higherPriceBox.insert(tk.END, "0.000095")
+higherPriceBox.config(bg="#001923", fg="white")
+higherPriceBox.grid(row=7, column=2)
 
 gridNumberLabel = tk.Label(gridStratFrame, text="    Number Of Grids")
 gridNumberLabel.config(relief=FLAT, bg="#182923", fg="white")
-gridNumberLabel.grid(row=6, column=0)
+gridNumberLabel.grid(row=8, column=0)
 numberOfGrids = Scale(gridStratFrame, from_=2, to=200, resolution=2, orient=HORIZONTAL, bg="#182923", fg="white", relief=FLAT)
 numberOfGrids["highlightthickness"]=0
-numberOfGrids.grid(row=6, column=2)
+numberOfGrids.grid(row=8, column=2)
 
 #gridLowerPrice
 #gridUpperPrice
