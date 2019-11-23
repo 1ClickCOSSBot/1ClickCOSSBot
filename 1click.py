@@ -310,6 +310,8 @@ aboutInfo.insert(tk.END, "\n\nAll trading performed using this bot is\nat your o
 aboutInfo.config(state="disabled")
 
 #Define History page UI elements
+with open("history.txt", "rb") as f:
+    Label(historyFrame, text=f.read(), bg="#282923", fg="white", anchor="w", justify=LEFT).grid(row=0, column=0, sticky="W")
 
 #Setup UI elements
 root.winfo_toplevel().title("1Click COSS Bot")
