@@ -1,7 +1,3 @@
-Trading History
+COSS Gridbot started on 11/22/2019 at 8:09
 Sold 200 COSS at 0.000075
 Placed buy Order for 200 COSS at 0.000074
-Sold 200 COSS at 0.000076
-Placed buy Order for 200 COSS at 0.000075
-Sold 200 COSS at 0.000077
-Placed buy Order for 200 COSS at 0.000076

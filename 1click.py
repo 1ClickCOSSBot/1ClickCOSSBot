@@ -63,7 +63,7 @@ def openSettings():
 	#Load all grid strategy settings
 	# Load Grid Settings: publicKey, privateKey, orderSize, gridDistance, lowerPrice, higherPrice, numberOfGrids
 	with open('gridSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
-		tradePair, publicKey, privateKey, orderSize, gridDistance, lowerPrice, higherPrice, numberOfGrids = pickle.load(f)
+		tradePair, publicKey, privateKey, orderSize, gridDistance, lowerPrice, higherPrice, numberGrids = pickle.load(f)
 	tradingPair.set(tradePair)
 	publicAPIKeyBox.delete(0, tk.END)
 	publicAPIKeyBox.insert(tk.END, publicKey)
@@ -77,6 +77,7 @@ def openSettings():
 	lowerPriceBox.insert(tk.END, lowerPrice)
 	higherPriceBox.delete('1.0', tk.END)
 	higherPriceBox.insert(tk.END, higherPrice)
+	numberOfGrids.set(numberGrids)
 
 	tradePairBalanceLabel.config(text="    Base Balance (" + tradingPair.get().split('_')[0] + ")")
 	quotePairBalanceLabel.config(text="    Quote Balance (" + tradingPair.get().split('_')[1] + ")")
@@ -110,6 +111,10 @@ def openHistory():
 	clearFrames()
 	historyBtn.config(bg="blue", fg="white")
 	historyFrame.place(relwidth=FRAMEHEIGHT, relheight=FRAMEWIDTH, relx=FRAMEPADX, rely=FRAMEPADY)
+	with open("history.txt", "rb") as f:
+		f.seek(0)
+		historyTextField.delete("1.0", tk.END)
+		historyTextField.insert(tk.END, f.read())
 
 def tradingPairChanged(event):
 	'''
@@ -181,13 +186,13 @@ tk.Label(settingsFrame, text="", bg="#282923").grid(row=0)
 
 publicLabel = tk.Label(settingsFrame, text="   Public Key")
 publicLabel.config(relief=FLAT, bg="#282923", fg="white")
-publicLabel.grid(row=1)
+publicLabel.grid(row=1, sticky="W")
 publicAPIKeyBox = tk.Entry(settingsFrame, show="*", width=46)
 publicAPIKeyBox.grid(row=1, column=1)
 
 privateLabel = tk.Label(settingsFrame, text="   Private Key")
 privateLabel.config(relief=FLAT, bg="#282923", fg="white")
-privateLabel.grid(row=2)
+privateLabel.grid(row=2, sticky="W")
 privateAPIKeyBox = tk.Entry(settingsFrame, show="*", width=46)
 privateAPIKeyBox.grid(row=2, column=1)
 
@@ -195,7 +200,7 @@ tk.Label(settingsFrame, text="", bg="#282923").grid(row=3)
 
 tradingPairText = tk.Label(settingsFrame, text="   Trading Pair")
 tradingPairText.config(relief=FLAT, bg="#282923", fg="white")
-tradingPairText.grid(row=4, column=0)
+tradingPairText.grid(row=4, column=0, sticky="W")
 tradingPairOptions = [
     "COS_ETH",
     "COS_BTC",
@@ -212,7 +217,7 @@ pairMenu.grid(row=4, column=1)
 
 tradingStratText = tk.Label(settingsFrame, text="   Trading Strategy")
 tradingStratText.config(relief=FLAT, bg="#282923", fg="white")
-tradingStratText.grid(row=5, column=0)
+tradingStratText.grid(row=5, column=0, sticky="W")
 tradingStratOptions = [
     "GRID MM",
     "Buy Low Sell High"
@@ -243,7 +248,7 @@ tk.Label(gridStratFrame, text="Available Balances", bg="#182923", fg="white", fo
 
 tradePairBalanceLabel = tk.Label(gridStratFrame, text="    Base Balance (" + tradingPair.get().split('_')[0] + ")")
 tradePairBalanceLabel.config(relief=FLAT, bg="#182923", fg="white")
-tradePairBalanceLabel.grid(row=2, column=0)
+tradePairBalanceLabel.grid(row=2, column=0, sticky="W")
 tradePairBalanceBox = tk.Text(gridStratFrame, width=12, height=1)
 tradePairBalanceBox.insert(tk.END, "30000")
 tradePairBalanceBox.config(state="disabled", bg="#182923", fg="white")
@@ -251,7 +256,7 @@ tradePairBalanceBox.grid(row=2, column=2)
 
 quotePairBalanceLabel = tk.Label(gridStratFrame, text="    Quote Balance (" + tradingPair.get().split('_')[1] + ")")
 quotePairBalanceLabel.config(relief=FLAT, bg="#182923", fg="white")
-quotePairBalanceLabel.grid(row=3, column=0)
+quotePairBalanceLabel.grid(row=3, column=0, sticky="W")
 quotePairBalanceBox = tk.Text(gridStratFrame, width=12, height=1)
 quotePairBalanceBox.insert(tk.END, "2.67")
 quotePairBalanceBox.config(state="disabled", bg="#182923", fg="white")
@@ -262,7 +267,7 @@ tk.Label(gridStratFrame, text="Grid Settings", bg="#182923", fg="white", font='H
 
 orderSizeLabel = tk.Label(gridStratFrame, text="    Order Size (" + tradingPair.get().split('_')[1] + ")")
 orderSizeLabel.config(relief=FLAT, bg="#182923", fg="white")
-orderSizeLabel.grid(row=6, column=0)
+orderSizeLabel.grid(row=6, column=0, sticky="W")
 orderSizeBox = tk.Text(gridStratFrame, width=12, height=1)
 orderSizeBox.insert(tk.END, "0.015")
 orderSizeBox.config(bg="#352923", fg="white")
@@ -270,7 +275,7 @@ orderSizeBox.grid(row=6, column=2)
 
 gridDistanceLabel = tk.Label(gridStratFrame, text="    Grid Distance (" + tradingPair.get().split('_')[1] + ")")
 gridDistanceLabel.config(relief=FLAT, bg="#182923", fg="white")
-gridDistanceLabel.grid(row=7, column=0)
+gridDistanceLabel.grid(row=7, column=0, sticky="W")
 gridDistanceBox = tk.Text(gridStratFrame, width=12, height=1)
 gridDistanceBox.insert(tk.END, "0.000001")
 gridDistanceBox.config(bg="#352923", fg="white")
@@ -278,7 +283,7 @@ gridDistanceBox.grid(row=7, column=2)
 
 priceRangeLabel = tk.Label(gridStratFrame, text="    Price Range (" + tradingPair.get().split('_')[1] + ")")
 priceRangeLabel.config(relief=FLAT, bg="#182923", fg="white")
-priceRangeLabel.grid(row=8, column=0)
+priceRangeLabel.grid(row=8, column=0, sticky="W")
 lowerPriceBox = tk.Text(gridStratFrame, width=12, height=1)
 lowerPriceBox.insert(tk.END, "0.000065")
 lowerPriceBox.config(bg="#722123", fg="white")
@@ -290,7 +295,7 @@ higherPriceBox.grid(row=8, column=2)
 
 gridNumberLabel = tk.Label(gridStratFrame, text="    Number Of Grids")
 gridNumberLabel.config(relief=FLAT, bg="#182923", fg="white")
-gridNumberLabel.grid(row=9, column=0)
+gridNumberLabel.grid(row=9, column=0, sticky="W")
 numberOfGrids = Scale(gridStratFrame, from_=2, to=200, resolution=2, orient=HORIZONTAL, bg="#182923", fg="white", relief=FLAT)
 numberOfGrids["highlightthickness"]=0
 numberOfGrids.grid(row=9, column=2)
@@ -310,8 +315,12 @@ aboutInfo.insert(tk.END, "\n\nAll trading performed using this bot is\nat your o
 aboutInfo.config(state="disabled")
 
 #Define History page UI elements
-with open("history.txt", "rb") as f:
-    Label(historyFrame, text=f.read(), bg="#282923", fg="white", anchor="w", justify=LEFT).grid(row=0, column=0, sticky="W")
+scroll = Scrollbar(historyFrame)
+scroll.grid(row=1, column=2, sticky="W", ipady=191.70)
+tk.Label(historyFrame, text="", bg="#282923").grid(row=0, column=0)
+historyTextField = tk.Text(historyFrame, bg="#282923", fg="white", yscrollcommand=scroll.set, width=47, height=27.4)
+historyTextField.grid(row=1, column=1, sticky="W")
+scroll.config(command=historyTextField.yview)
 
 #Setup UI elements
 root.winfo_toplevel().title("1Click COSS Bot")
