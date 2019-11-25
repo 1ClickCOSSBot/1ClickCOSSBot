@@ -189,6 +189,10 @@ def saveStrategy():
 
 def telegramCheckBoxChanged():
 	if telegramVar.get() == 0:
+		confirmDisableTelegram = messagebox.askquestion('Disable Telegram', 'Are you sure you want to disable telegram alerts?')
+		if confirmDisableTelegram == 'no':
+			enableTelegramChk.select()
+			return 0
 		with open('telegramSettings.conf', 'wb') as f:
 			pickle.dump([False, tokenBox.get().strip(), chatIDBox.get().strip()], f)
 		testTelegramBtn.config(state="disabled")
@@ -199,6 +203,15 @@ def telegramCheckBoxChanged():
 		tokenBox.config(state="normal")
 		chatIDBox.config(state="normal")
 
+		with open('telegramSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
+			temp, getTelegramTokenChange, getTelegramChatIDChange = pickle.load(f)
+
+		tokenBox.delete(0, tk.END)
+		tokenBox.insert(tk.END, getTelegramTokenChange.strip())
+		chatIDBox.delete(0, tk.END)
+		chatIDBox.insert(tk.END, getTelegramChatIDChange.strip())
+		messagebox.showinfo("Telegram Enabled", "To enable telegram alerts please insert your Telegram bot token and chat ID then press the 'Test and Save' button to enable.")
+
 
 def sendTelegramMessage(message, isATest):
 	'''
@@ -207,7 +220,7 @@ def sendTelegramMessage(message, isATest):
 	if isATest:
 		telegramToken = tokenBox.get().strip()
 		telegramChatID = chatIDBox.get().strip()
-		messagebox.showinfo("Telegram Test", "The bot will now send a message to your telegram bot and save your telegram settings. If you don't recieve it please confirm your token and chat ID are correct.")
+		messagebox.showinfo("Telegram Test", "The bot will now send a message to your telegram bot and save your telegram settings. If you don't recieve it please confirm your token and chat ID are correct and try again.")
 		messageSender = 'https://api.telegram.org/bot' + telegramToken + '/sendMessage?chat_id=' + telegramChatID + '&parse_mode=Markdown&text=' + message
 		#Save all settings to gridSettings.conf
 		with open('telegramSettings.conf', 'wb') as f:
