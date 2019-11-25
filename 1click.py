@@ -1,5 +1,6 @@
 import os, sys
 import pickle
+import threading, time
 import tkinter as tk
 from tkinter import *
 from tkinter import messagebox
@@ -12,6 +13,7 @@ Download and install python3 with pip
 In a console or terminal run:
 	pip install Pillow
 	pip install requests
+	(Linux only) sudo apt install python3-tk
 
 Once all packages are installed please run this python script to start the UI
 '''
@@ -111,10 +113,19 @@ def openHistory():
 	clearFrames()
 	historyBtn.config(bg="blue", fg="white")
 	historyFrame.place(relwidth=FRAMEHEIGHT, relheight=FRAMEWIDTH, relx=FRAMEPADX, rely=FRAMEPADY)
+
 	with open("history.txt", "rb") as f:
 		f.seek(0)
 		historyTextField.delete("1.0", tk.END)
 		historyTextField.insert(tk.END, f.read())
+
+def historyReresh():
+    while True:
+    	with open("history.txt", "rb") as f:
+    		f.seek(0)
+    		historyTextField.delete("1.0", tk.END)
+    		historyTextField.insert(tk.END, f.read())
+    	time.sleep(1)
 
 def tradingPairChanged(event):
 	'''
@@ -178,8 +189,15 @@ homeInfo.insert(tk.END, "\nWelcome to the 1Click COSS Bot\n\nTo get started plea
 homeInfo.insert(tk.END, "\n\nOnce configured you can run the bot from the\nrun tab")
 homeInfo.insert(tk.END, "\n\nLatest Updates (11/21/2019)\n---------------------------\n - First live build of 1Click COSS bot\n - Added support for grid strategy\n - Added Settings page to customize bot\n - Added History page to keep track of trades\n - Added UI for ease of use")
 homeInfo.insert(tk.END, "\n\nTrading is very risky, the use of this tool may\nresult in significant losses")
-homeInfo.insert(tk.END, "\n\nFor the best security and to protect your\nprimary COSS account, always create a second\naccount for use with public trading bots.")
+homeInfo.insert(tk.END, "\n\nTo protect your primary COSS account, always\ncreate a second account for use with public\ntrading bots.")
 homeInfo.config(state="disabled")
+
+if os.name == "nt":
+	cossPhoto = ImageTk.PhotoImage(Image.open("coss2.png"))
+	cossPhotoLabel = tk.Label(homeFrame,text="image",image=cossPhoto, bg="#282923")
+	cossPhotoLabel.pack()
+else:
+	print("Images not supported in this OS") 
 
 #Define Settings page UI elements
 tk.Label(settingsFrame, text="", bg="#282923").grid(row=0)
@@ -339,6 +357,11 @@ runBtn.pack(in_=btnFrame, side=LEFT)
 settingsBtn.pack(in_=btnFrame, side=LEFT)
 historyBtn.pack(in_=btnFrame, side=LEFT)
 aboutBtn.pack(in_=btnFrame, side=LEFT)
+
+#Start concurrent threads
+historyRefreshThread = threading.Thread(target=historyReresh)
+historyRefreshThread.daemon = True
+historyRefreshThread.start()
 
 root.mainloop()
 
