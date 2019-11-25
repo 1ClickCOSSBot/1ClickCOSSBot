@@ -1,10 +1,12 @@
 import os, sys
 import pickle
 import threading, time
+import requests
 import tkinter as tk
 from tkinter import *
 from tkinter import messagebox
 from PIL import Image, ImageTk
+from functools import partial
 
 '''
 Pre-Reqs
@@ -26,8 +28,20 @@ FRAMEWIDTH=0.8
 FRAMEPADX=0.1
 FRAMEPADY=0.125
 
-def hide_me(event):
-	event.widget.pack_forget()
+def initializeBot():
+	#Load telegram settings
+	with open('telegramSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
+		isTelegramEnabled, getTelegramToken, getTelegramChatID = pickle.load(f)
+	if isTelegramEnabled:
+		enableTelegramChk.select()
+		telegramCheckBoxChanged()
+	tokenBox.delete(0, tk.END)
+	tokenBox.insert(tk.END, getTelegramToken.strip())
+	chatIDBox.delete(0, tk.END)
+	chatIDBox.insert(tk.END, getTelegramChatID.strip())
+
+	if isTelegramEnabled:
+		sendTelegramMessage("An instance of your 1Click COS bot was just launched. If this wasn't you please login to your COSS account and disable your API keys immediately.", False)
 
 def clearFrames():
 	homeFrame.place_forget()
@@ -35,13 +49,16 @@ def clearFrames():
 	runFrame.place_forget()
 	aboutFrame.place_forget()
 	historyFrame.place_forget()
+	botOptionsFrame.place_forget()
 	gridStratFrame.place_forget()
 	blStratFrame.place_forget()
+
 	homeBtn.config(bg="grey", fg="black")
 	runBtn.config(bg="grey", fg="black")
 	settingsBtn.config(bg="grey", fg="black")
 	aboutBtn.config(bg="grey", fg="black")
 	historyBtn.config(bg="grey", fg="black")
+	botOptionBtn.config(bg="grey", fg="black")
 
 #Create function for run button
 def openHome():
@@ -52,7 +69,7 @@ def openHome():
 	homeBtn.config(bg="blue", fg="white")
 	homeFrame.place(relwidth=FRAMEHEIGHT, relheight=FRAMEWIDTH, relx=FRAMEPADX, rely=FRAMEPADY)
 
-#Create function for settings button
+#Create function for settings/strategy button
 def openSettings():
 	'''
 	Switches frames to the settings tab
@@ -119,13 +136,25 @@ def openHistory():
 		historyTextField.delete("1.0", tk.END)
 		historyTextField.insert(tk.END, f.read())
 
+#Create function for botOptions button
+def openOptions():
+	'''
+	Switches frames to the options setting tab
+	'''
+	clearFrames()
+
+	botOptionBtn.config(bg="blue", fg="white")
+	botOptionsFrame.place(relwidth=FRAMEHEIGHT, relheight=FRAMEWIDTH, relx=FRAMEPADX, rely=FRAMEPADY)
+
 def historyReresh():
-    while True:
-    	with open("history.txt", "rb") as f:
-    		f.seek(0)
-    		historyTextField.delete("1.0", tk.END)
-    		historyTextField.insert(tk.END, f.read())
-    	time.sleep(1)
+	while True:
+		with open("history.txt", "rb") as f:
+			f.seek(0)
+			historyTextField.delete("1.0", tk.END)
+			historyTextField.insert(tk.END, f.read())
+		time.sleep(3)
+		#msgResult = sendTelegramMessage("Updating History", False)
+		#print(msgResult)
 
 def tradingPairChanged(event):
 	'''
@@ -151,13 +180,46 @@ def stratMenuChanged(event):
 	#print("Strategy was changed to " + tradingStrat.get())
 
 def saveStrategy():
-
 	#Save all settings to gridSettings.conf
 	with open('gridSettings.conf', 'wb') as f:
 	    pickle.dump([tradingPair.get().strip(), publicAPIKeyBox.get().strip(), privateAPIKeyBox.get().strip(), orderSizeBox.get("1.0", tk.END).strip(), gridDistanceBox.get("1.0", tk.END).strip(), lowerPriceBox.get("1.0", tk.END).strip(), higherPriceBox.get("1.0", tk.END).strip(), numberOfGrids.get()], f)
 
 	messagebox.showinfo("Saved", "Your strategy settings have been applied")
 	openRun()
+
+def telegramCheckBoxChanged():
+	if telegramVar.get() == 0:
+		with open('telegramSettings.conf', 'wb') as f:
+			pickle.dump([False, tokenBox.get().strip(), chatIDBox.get().strip()], f)
+		testTelegramBtn.config(state="disabled")
+		tokenBox.config(state="disabled")
+		chatIDBox.config(state="disabled")
+	else:
+		testTelegramBtn.config(state="normal")
+		tokenBox.config(state="normal")
+		chatIDBox.config(state="normal")
+
+
+def sendTelegramMessage(message, isATest):
+	'''
+	Send a Telegram message to users telegram bot
+	'''
+	if isATest:
+		telegramToken = tokenBox.get().strip()
+		telegramChatID = chatIDBox.get().strip()
+		messagebox.showinfo("Telegram Test", "The bot will now send a message to your telegram bot and save your telegram settings. If you don't recieve it please confirm your token and chat ID are correct.")
+		messageSender = 'https://api.telegram.org/bot' + telegramToken + '/sendMessage?chat_id=' + telegramChatID + '&parse_mode=Markdown&text=' + message
+		#Save all settings to gridSettings.conf
+		with open('telegramSettings.conf', 'wb') as f:
+			pickle.dump([isATest, telegramToken, telegramChatID], f)
+
+	else:
+		telegramToken = tokenBox.get()
+		telegramChatID = chatIDBox.get()
+		messageSender = 'https://api.telegram.org/bot' + telegramToken + '/sendMessage?chat_id=' + telegramChatID + '&parse_mode=Markdown&text=' + message
+
+	response = requests.get(messageSender)
+	return response.json()
 
 #Create the root UI
 root = tk.Tk()
@@ -175,17 +237,19 @@ settingsFrame = tk.Frame(root, bg="#282923")
 aboutFrame = tk.Frame(root,bg="#282923")
 historyFrame = tk.Frame(root,bg="#282923")
 notificationFrame = tk.Frame(root, bg="#282923")
+botOptionsFrame = tk.Frame(root, bg="#282923")
 img = ImageTk.PhotoImage(Image.open("coss.png"))
 homeBtn = tk.Button(root, text="Home", padx=10, pady=5, fg="white", bg="blue", height=1, width=4, command=openHome, relief=FLAT)
 runBtn = tk.Button(root, text="Run", padx=10, pady=5, fg="black", bg="grey", height=1, width=4, command=openRun, relief=FLAT)
-settingsBtn = tk.Button(root, text="Settings", padx=10, pady=5, fg="black", bg="grey", height=1, width=4, command=openSettings, relief=FLAT)
-aboutBtn = tk.Button(root, text="About", padx=10, pady=5, fg="black", bg="grey", height=1, width=4, command=openAbout, relief=FLAT)
+settingsBtn = tk.Button(root, text="Strategy", padx=10, pady=5, fg="black", bg="grey", height=1, width=4, command=openSettings, relief=FLAT)
 historyBtn = tk.Button(root, text="History", padx=10, pady=5, fg="black", bg="grey", height=1, width=4, command=openHistory, relief=FLAT)
+botOptionBtn = tk.Button(root, text="Settings", padx=10, pady=5, fg="black", bg="grey", height=1, width=4, command=openOptions, relief=FLAT)
+aboutBtn = tk.Button(root, text="About", padx=10, pady=5, fg="black", bg="grey", height=1, width=4, command=openAbout, relief=FLAT)
 
 #Define Home page UI elements
 homeInfo = tk.Text(homeFrame, relief=FLAT, fg="white", bg="#282923", height=24, width=47)
 homeInfo.pack()
-homeInfo.insert(tk.END, "\nWelcome to the 1Click COSS Bot\n\nTo get started please first customize your bot\nsettings from the settings tab")
+homeInfo.insert(tk.END, "\n1Click COSS Bot - version 1.0\n\nTo get started please first customize your bot\nfrom the strategy tab. You can also enable\ntelegram messaging from the settings tab.")
 homeInfo.insert(tk.END, "\n\nOnce configured you can run the bot from the\nrun tab")
 homeInfo.insert(tk.END, "\n\nLatest Updates (11/21/2019)\n---------------------------\n - First live build of 1Click COSS bot\n - Added support for grid strategy\n - Added Settings page to customize bot\n - Added History page to keep track of trades\n - Added UI for ease of use")
 homeInfo.insert(tk.END, "\n\nTrading is very risky, the use of this tool may\nresult in significant losses")
@@ -318,10 +382,31 @@ numberOfGrids = Scale(gridStratFrame, from_=2, to=200, resolution=2, orient=HORI
 numberOfGrids["highlightthickness"]=0
 numberOfGrids.grid(row=9, column=2)
 
-#gridLowerPrice
-#gridUpperPrice
-
 #Define Run page UI elements
+
+#Define Options page UI elements
+tk.Label(botOptionsFrame, text="       ", bg="#282923").grid(row=0, column=1)
+
+telegramVar = tk.IntVar()
+enableTelegramChk = tk.Checkbutton(botOptionsFrame, text="Telegram", variable=telegramVar, command=telegramCheckBoxChanged)
+enableTelegramChk.config(bg="#282923", fg="red")
+enableTelegramChk.grid(row=1, sticky="W")
+
+testMessage_withArg = partial(sendTelegramMessage, "This is a test!", True)
+testTelegramBtn = tk.Button(botOptionsFrame, text="Test and Save", padx=25, fg="white", bg="#082923", height=1, width=4, command=testMessage_withArg, relief=FLAT)
+testTelegramBtn.grid(row=1, column=2)
+
+tokenLabel = tk.Label(botOptionsFrame, text=" Bot Token")
+tokenLabel.config(relief=FLAT, bg="#282923", fg="white")
+tokenLabel.grid(row=2, sticky="W")
+tokenBox = tk.Entry(botOptionsFrame, width=46)
+tokenBox.grid(row=2, column=2)
+
+chatIDLabel = tk.Label(botOptionsFrame, text=" Bot Chat ID")
+chatIDLabel.config(relief=FLAT, bg="#282923", fg="white")
+chatIDLabel.grid(row=3, sticky="W")
+chatIDBox = tk.Entry(botOptionsFrame, width=46)
+chatIDBox.grid(row=3, column=2)
 
 #Define About page UI elements
 aboutInfo = tk.Text(aboutFrame, relief=FLAT, fg="white", bg="#282923", height=24, width=47)
@@ -340,6 +425,8 @@ historyTextField = tk.Text(historyFrame, bg="#282923", fg="white", yscrollcomman
 historyTextField.grid(row=1, column=1, sticky="W")
 scroll.config(command=historyTextField.yview)
 
+#Define Run page UI elements
+
 #Setup UI elements
 root.winfo_toplevel().title("1Click COSS Bot")
 
@@ -356,12 +443,21 @@ homeBtn.config(bg="blue")
 runBtn.pack(in_=btnFrame, side=LEFT)
 settingsBtn.pack(in_=btnFrame, side=LEFT)
 historyBtn.pack(in_=btnFrame, side=LEFT)
+botOptionBtn.pack(in_=btnFrame, side=LEFT)
 aboutBtn.pack(in_=btnFrame, side=LEFT)
+
+if telegramVar.get() == 0:
+	testTelegramBtn.config(state="disabled")
+	tokenBox.config(state="disabled")
+	chatIDBox.config(state="disabled")
 
 #Start concurrent threads
 historyRefreshThread = threading.Thread(target=historyReresh)
 historyRefreshThread.daemon = True
 historyRefreshThread.start()
+
+#If telegram is enabled, alert user that bot was started
+initializeBot()
 
 root.mainloop()
 
