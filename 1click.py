@@ -210,7 +210,7 @@ def telegramCheckBoxChanged():
 		tokenBox.insert(tk.END, getTelegramTokenChange.strip())
 		chatIDBox.delete(0, tk.END)
 		chatIDBox.insert(tk.END, getTelegramChatIDChange.strip())
-		messagebox.showinfo("Telegram Enabled", "To enable telegram alerts please insert your Telegram bot token and chat ID then press the 'Test and Save' button to enable.")
+		#messagebox.showinfo("Telegram Enabled", "To enable telegram alerts please insert your Telegram bot token and chat ID then press the 'Test and Save' button to enable.")
 
 
 def sendTelegramMessage(message, isATest):
@@ -396,6 +396,7 @@ numberOfGrids["highlightthickness"]=0
 numberOfGrids.grid(row=9, column=2)
 
 #Define Run page UI elements
+
 
 #Define Options page UI elements
 tk.Label(botOptionsFrame, text="       ", bg="#282923").grid(row=0, column=1)
