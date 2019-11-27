@@ -1,6 +1,13 @@
-COSS Gridbot started on 11/22/2019 at 8:09
-Placing 4 grid orders
-Sold 200 COSS at 0.000075
-Placed buy Order for 200 COSS at 0.000074
-Sold 200 COSS at 0.000075
-Placed buy Order for 200 COSS at 0.000074
+COSS Bot Started on 2019-11-26 01:06:42.156218
+Running in test mode
+Strategy selected: Grid MM
+Trading pair selected: COS_ETH
+Creating 56.0 buy grids
+Success
+Creating 56.0 sell grids
+Success
+Checking if any orders were filled: No
+Checking if any orders were filled: No
+Checking if any orders were filled: No
+Stopping and exiting test run
+COSS Bot Stopped on 2019-11-26 01:06:57.798663

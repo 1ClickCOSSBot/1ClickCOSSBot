@@ -3,6 +3,8 @@ import pickle
 import threading, time
 import requests
 import tkinter as tk
+from os import path
+from datetime import datetime 
 from tkinter import *
 from tkinter import messagebox
 from PIL import Image, ImageTk
@@ -148,13 +150,11 @@ def openOptions():
 
 def historyReresh():
 	while True:
-		with open("history.txt", "rb") as f:
-			f.seek(0)
+		with open("history.txt", "rb") as f2:
+			f2.seek(0)
 			historyTextField.delete("1.0", tk.END)
-			historyTextField.insert(tk.END, f.read())
-		time.sleep(3)
-		#msgResult = sendTelegramMessage("Updating History", False)
-		#print(msgResult)
+			historyTextField.insert(tk.END, f2.read())
+		time.sleep(1)
 
 def tradingPairChanged(event):
 	'''
@@ -186,6 +186,24 @@ def saveStrategy():
 
 	messagebox.showinfo("Saved", "Your strategy settings have been applied")
 	openRun()
+
+def startStrategy():
+	#Check if history already exists and ask user if they want to clear it
+
+	strategyTestThread = threading.Thread(target=strategyTest)
+	strategyTestThread.daemon = True
+	strategyTestThread.start()
+
+	openHistory()
+
+def strategyTest():
+	print("Starting Strategy")
+
+def demoCheckBoxChanged():
+	if demoVar.get() == 0:
+		print("Demo Mode disabled")
+	else:
+		print ("Demo Mode enabled")
 
 def telegramCheckBoxChanged():
 	if telegramVar.get() == 0:
@@ -262,7 +280,7 @@ aboutBtn = tk.Button(root, text="About", padx=10, pady=5, fg="black", bg="grey",
 #Define Home page UI elements
 homeInfo = tk.Text(homeFrame, relief=FLAT, fg="white", bg="#282923", height=24, width=47)
 homeInfo.pack()
-homeInfo.insert(tk.END, "\n1Click COSS Bot - version 1.0\n\nTo get started please first customize your bot\nfrom the strategy tab. You can also enable\ntelegram messaging from the settings tab.")
+homeInfo.insert(tk.END, "\n1Click COSS Bot - version 0.1\n\nTo get started please first customize your bot\nfrom the strategy tab. You can also enable\ntelegram messaging from the settings tab.")
 homeInfo.insert(tk.END, "\n\nOnce configured you can run the bot from the\nrun tab")
 homeInfo.insert(tk.END, "\n\nLatest Updates (11/21/2019)\n---------------------------\n - First live build of 1Click COSS bot\n - Added support for grid strategy\n - Added Settings page to customize bot\n - Added History page to keep track of trades\n - Added UI for ease of use")
 homeInfo.insert(tk.END, "\n\nTrading is very risky, the use of this tool may\nresult in significant losses")
@@ -396,7 +414,34 @@ numberOfGrids["highlightthickness"]=0
 numberOfGrids.grid(row=9, column=2)
 
 #Define Run page UI elements
+tk.Label(runFrame, text="", bg="#282923").grid(row=0, column=1)
 
+runStrategyLabel = tk.Label(runFrame, text=" Selected Trading Strategy:")
+runStrategyLabel.config(relief=FLAT, bg="#282923", fg="white")
+runStrategyLabel.grid(row=1, column=0, sticky="W")
+runStrategyBox = tk.Text(runFrame, width=12, height=1)
+runStrategyBox.insert(tk.END, tradingStrat.get())
+runStrategyBox.config(state="disabled", bg="#282923", fg="white")
+runStrategyBox.grid(row=1, column=2)
+
+runTradePairLabel = tk.Label(runFrame, text=" Selected Trading Pair:")
+runTradePairLabel.config(relief=FLAT, bg="#282923", fg="white")
+runTradePairLabel.grid(row=2, column=0, sticky="W")
+runTradePairBox = tk.Text(runFrame, width=12, height=1)
+runTradePairBox.insert(tk.END, tradingPair.get())
+runTradePairBox.config(state="disabled", bg="#282923", fg="white")
+runTradePairBox.grid(row=2, column=2)
+
+demoVar = tk.IntVar()
+enableDemoChk = tk.Checkbutton(runFrame, text="Demo Mode", variable=demoVar, command=demoCheckBoxChanged)
+enableDemoChk.config(bg="#282923", fg="red")
+enableDemoChk.grid(row=3, sticky="W")
+
+#Define bottom frame for run page start button
+startRunFrame = tk.Frame(runFrame, bg="#282923")
+startRunFrame.place(relwidth=FRAMEWIDTH*1.25, relheight=FRAMEHEIGHT/6.5, relx=0, rely=FRAMEPADY*7.2)
+startBtn = tk.Button(startRunFrame, text="Start", padx=10, pady=5, fg="black", bg="grey", height=1, width=4, command=startStrategy, relief=FLAT)
+startBtn.pack()
 
 #Define Options page UI elements
 tk.Label(botOptionsFrame, text="       ", bg="#282923").grid(row=0, column=1)
@@ -438,8 +483,6 @@ tk.Label(historyFrame, text="", bg="#282923").grid(row=0, column=0)
 historyTextField = tk.Text(historyFrame, bg="#282923", fg="white", yscrollcommand=scroll.set, width=47, height=27.4)
 historyTextField.grid(row=1, column=1, sticky="W")
 scroll.config(command=historyTextField.yview)
-
-#Define Run page UI elements
 
 #Setup UI elements
 root.winfo_toplevel().title("1Click COSS Bot")
