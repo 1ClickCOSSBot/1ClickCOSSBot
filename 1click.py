@@ -123,8 +123,22 @@ def openRun():
 	'''
 	Switches frames to the run tab
 	'''	
+	openSettings()
 	clearFrames()
 	runBtn.config(bg=BTNCLICKEDBG, fg=BTNCLICKEDFG)
+
+	#Update information in text fields
+	runStrategyBox.config(state="normal")
+	runStrategyBox.delete('1.0', tk.END)
+	runStrategyBox.insert(tk.END, tradingStrat.get())
+	runStrategyBox.config(state="disabled")
+	runTradePairBox.config(state="normal")
+	runTradePairBox.delete('1.0', tk.END)
+	runTradePairBox.insert(tk.END, tradingPair.get())
+	runTradePairBox.config(state="disabled")
+	runInstanceNameBox.delete('1.0', tk.END)
+	runInstanceNameBox.insert(tk.END, tradingStrat.get().replace(" ", "") + "_" + tradingPair.get().replace(" ", ""))
+
 	runFrame.place(relwidth=FRAMEHEIGHT, relheight=FRAMEWIDTH, relx=FRAMEPADX, rely=FRAMEPADY)
 
 #Create function for about button
@@ -200,17 +214,17 @@ def saveStrategy():
 	openRun()
 
 def startStrategy():
-	#Check if history already exists and ask user if they want to clear it
-
-	strategyTestThread = threading.Thread(target=strategyThread)
+	
+	strategyWithArg = partial(strategyThread, runInstanceNameBox.get("1.0", tk.END).replace(" ", ""))
+	strategyTestThread = threading.Thread(target=strategyWithArg)
 	strategyTestThread.daemon = True
 	strategyTestThread.start()
 
 	openHistory()
 
-def strategyThread():
+def strategyThread(name):
 	myGridBot = gridBotStart
-	myGridBot.gridStart()
+	myGridBot.gridStart(name)
 
 def demoCheckBoxChanged():
 	if demoVar.get() == 0:
@@ -287,8 +301,9 @@ homeBtn = tk.Button(root, text="Home", padx=10, pady=5, fg=BTNCLICKEDFG, bg=BTNC
 runBtn = tk.Button(root, text="Run", padx=10, pady=5, fg=BTNFG, bg=BTNBG, height=1, width=4, command=openRun, relief=FLAT)
 settingsBtn = tk.Button(root, text="Strategy", padx=10, pady=5, fg=BTNFG, bg=BTNBG, height=1, width=4, command=openSettings, relief=FLAT)
 historyBtn = tk.Button(root, text="History", padx=10, pady=5, fg=BTNFG, bg=BTNBG, height=1, width=4, command=openHistory, relief=FLAT)
-botOptionBtn = tk.Button(root, text="Settings", padx=10, pady=5, fg=BTNFG, bg=BTNBG, height=1, width=4, command=openOptions, relief=FLAT)
+botOptionBtn = tk.Button(root, text="Settings", padx=12, pady=5, fg=BTNFG, bg=BTNBG, height=1, width=4, command=openOptions, relief=FLAT)
 aboutBtn = tk.Button(root, text="About", padx=10, pady=5, fg=BTNFG, bg=BTNBG, height=1, width=4, command=openAbout, relief=FLAT)
+exchangeBtn = tk.Button(root, text="Extras", padx=14, pady=5, fg="white", bg="#663399", height=1, width=4, command=openAbout, relief=FLAT)
 
 #Define Home page UI elements
 homeInfo = tk.Text(homeFrame, relief=FLAT, fg=FOREGROUND, bg=BACKGROUND, height=24, width=47)
@@ -396,7 +411,7 @@ orderSizeLabel.config(relief=FLAT, bg="#182923", fg=FOREGROUND)
 orderSizeLabel.grid(row=6, column=0, sticky="W")
 orderSizeBox = tk.Text(gridStratFrame, width=12, height=1)
 orderSizeBox.insert(tk.END, "0.015")
-orderSizeBox.config(bg="#352923", fg=FOREGROUND)
+orderSizeBox.config(bg="white", fg="black")
 orderSizeBox.grid(row=6, column=2)
 
 gridDistanceLabel = tk.Label(gridStratFrame, text="    Grid Distance (" + tradingPair.get().split('_')[1] + ")")
@@ -404,7 +419,7 @@ gridDistanceLabel.config(relief=FLAT, bg="#182923", fg=FOREGROUND)
 gridDistanceLabel.grid(row=7, column=0, sticky="W")
 gridDistanceBox = tk.Text(gridStratFrame, width=12, height=1)
 gridDistanceBox.insert(tk.END, "0.000001")
-gridDistanceBox.config(bg="#352923", fg=FOREGROUND)
+gridDistanceBox.config(bg="white", fg="black")
 gridDistanceBox.grid(row=7, column=2)
 
 priceRangeLabel = tk.Label(gridStratFrame, text="    Price Range (" + tradingPair.get().split('_')[1] + ")")
@@ -412,19 +427,19 @@ priceRangeLabel.config(relief=FLAT, bg="#182923", fg=FOREGROUND)
 priceRangeLabel.grid(row=8, column=0, sticky="W")
 lowerPriceBox = tk.Text(gridStratFrame, width=12, height=1)
 lowerPriceBox.insert(tk.END, "0.000065")
-lowerPriceBox.config(bg="#722123", fg=FOREGROUND)
+lowerPriceBox.config(bg="#cc3300", fg="white")
 lowerPriceBox.grid(row=8, column=1)
 higherPriceBox = tk.Text(gridStratFrame, width=12, height=1)
 higherPriceBox.insert(tk.END, "0.000095")
-higherPriceBox.config(bg="#001923", fg=FOREGROUND)
+higherPriceBox.config(bg="#336600", fg="white")
 higherPriceBox.grid(row=8, column=2)
 
-gridNumberLabel = tk.Label(gridStratFrame, text="    Number Of Grids")
+gridNumberLabel = tk.Label(gridStratFrame, text="\n    Number Of Grids")
 gridNumberLabel.config(relief=FLAT, bg="#182923", fg=FOREGROUND)
 gridNumberLabel.grid(row=9, column=0, sticky="W")
-numberOfGrids = Scale(gridStratFrame, from_=2, to=200, resolution=2, orient=HORIZONTAL, bg="#182923", fg=FOREGROUND, relief=FLAT)
+numberOfGrids = Scale(gridStratFrame, from_=2, to=200, resolution=2, orient=HORIZONTAL, bg="#182923", fg=FOREGROUND, relief=FLAT, length=210)
 numberOfGrids["highlightthickness"]=0
-numberOfGrids.grid(row=9, column=2)
+numberOfGrids.grid(row=9, column=1, columnspan=2)
 
 #Define Run page UI elements
 tk.Label(runFrame, text="", bg=BACKGROUND).grid(row=0, column=1)
@@ -433,22 +448,27 @@ runStrategyLabel = tk.Label(runFrame, text=" Selected Trading Strategy:")
 runStrategyLabel.config(relief=FLAT, bg=BACKGROUND, fg=FOREGROUND)
 runStrategyLabel.grid(row=1, column=0, sticky="W")
 runStrategyBox = tk.Text(runFrame, width=12, height=1)
-runStrategyBox.insert(tk.END, tradingStrat.get())
 runStrategyBox.config(state="disabled", bg=BACKGROUND, fg=FOREGROUND)
-runStrategyBox.grid(row=1, column=2)
+runStrategyBox.grid(row=1, column=2, sticky="W")
 
 runTradePairLabel = tk.Label(runFrame, text=" Selected Trading Pair:")
 runTradePairLabel.config(relief=FLAT, bg=BACKGROUND, fg=FOREGROUND)
 runTradePairLabel.grid(row=2, column=0, sticky="W")
 runTradePairBox = tk.Text(runFrame, width=12, height=1)
-runTradePairBox.insert(tk.END, tradingPair.get())
 runTradePairBox.config(state="disabled", bg=BACKGROUND, fg=FOREGROUND)
-runTradePairBox.grid(row=2, column=2)
+runTradePairBox.grid(row=2, column=2, sticky="W")
+
+runInstanceNameLabel = tk.Label(runFrame, text=" Name of Bot Instance:")
+runInstanceNameLabel.config(relief=FLAT, bg=BACKGROUND, fg=FOREGROUND)
+runInstanceNameLabel.grid(row=3, column=0, sticky="W")
+runInstanceNameBox = tk.Text(runFrame, width=16, height=1)
+runInstanceNameBox.config(state="normal", bg="white", fg="black")
+runInstanceNameBox.grid(row=3, column=2, columnspan=2)
 
 demoVar = tk.IntVar()
 enableDemoChk = tk.Checkbutton(runFrame, text="Demo Mode", variable=demoVar, command=demoCheckBoxChanged)
 enableDemoChk.config(bg=BACKGROUND, fg="red")
-enableDemoChk.grid(row=3, sticky="W")
+enableDemoChk.grid(row=4, sticky="W")
 
 #Define bottom frame for run page start button
 startRunFrame = tk.Frame(runFrame, bg=BACKGROUND)
@@ -515,6 +535,8 @@ settingsBtn.pack(in_=btnFrame, side=LEFT)
 historyBtn.pack(in_=btnFrame, side=LEFT)
 botOptionBtn.pack(in_=btnFrame, side=LEFT)
 aboutBtn.pack(in_=btnFrame, side=LEFT)
+exchangeBtn.config(state="disabled")
+exchangeBtn.pack(in_=btnFrame, side=LEFT)
 
 if telegramVar.get() == 0:
 	testTelegramBtn.config(state="disabled")

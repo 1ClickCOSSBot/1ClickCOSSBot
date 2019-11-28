@@ -2,10 +2,19 @@ from pycoss import PyCOSSClient
 import datetime
 import time
 import pickle
+import requests
 
 class gridBotStart:
 
-	def gridStart():
+	def sendTelegram(token, chatID, message):
+		messageSender = 'https://api.telegram.org/bot' + token + '/sendMessage?chat_id=' + chatID + '&parse_mode=Markdown&text=' + message
+		response = requests.get(messageSender)
+		return response.json()
+
+	def updateRunHistory(message):
+		print(message)
+
+	def gridStart(instanceName):
 		#Grab settings from gridSettings.conf
 		#publicKey, privateKey, orderSize, gridDistance, lowerPrice, higherPrice, numberOfGrids
 		with open('gridSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
@@ -23,11 +32,17 @@ class gridBotStart:
 		coss_client = PyCOSSClient(api_public=publicKey,
 		                           api_secret=privateKey)
 
-		coss_ob = coss_client.get_order_book(symbol="COS_ETH")
-		print("Price: " + coss_ob["bids"][1][0] + " Amount: " + coss_ob["bids"][0][1])
+		#coss_ob = coss_client.get_order_book(symbol="COS_ETH")
+		#print("Price: " + coss_ob["bids"][1][0] + " Amount: " + coss_ob["bids"][0][1])
 
-	def sendTelegram():
-		print("Sending telegram message")
+		#Get Telegram settings
+		with open('telegramSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
+			telegramEnabled, getTelegramToken, getTelegramChatID = pickle.load(f)
 
-	def updateRunHistory():
-		print("Updating run history")
+		#Notify User of bot instance in telegram
+		if telegramEnabled:
+			gridBotStart.sendTelegram(getTelegramToken, getTelegramChatID, instanceName.strip() + ":\nStarting grid MM strategy")
+
+		#Clear any previous history and add new history
+		
+		gridBotStart.updateRunHistory(instanceName.strip() + ":\nStarting grid MM strategy")			
