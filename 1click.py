@@ -3,6 +3,8 @@ import pickle
 import threading, time
 import requests
 import tkinter as tk
+import exchange
+from exchange import exchangeInfo
 import gridBot
 from gridBot import gridBotStart
 from os import path
@@ -43,6 +45,8 @@ BTNCLICKEDFG = "white"
 BTNFRAMEBG = CANVASBG
 
 def initializeBot():
+	#Check if this is a first time run
+
 	#Load telegram settings
 	with open('telegramSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
 		isTelegramEnabled, getTelegramToken, getTelegramChatID = pickle.load(f)
@@ -112,11 +116,11 @@ def openSettings():
 	higherPriceBox.insert(tk.END, higherPrice)
 	numberOfGrids.set(numberGrids)
 
-	tradePairBalanceLabel.config(text="    Base Balance (" + tradingPair.get().split('_')[0] + ")")
-	quotePairBalanceLabel.config(text="    Quote Balance (" + tradingPair.get().split('_')[1] + ")")
-	orderSizeLabel.config(text="    Order Size (" + tradingPair.get().split('_')[1] + ")")
-	priceRangeLabel.config(text="    Price Range (" + tradingPair.get().split('_')[1] + ")")
-	gridDistanceLabel.config(text="    Grid Distance (" + tradingPair.get().split('_')[1] + ")")
+	tradePairBalanceLabel.config(text="    Base Balance (" + tradingPair.get() + ")")
+	quotePairBalanceLabel.config(text="    Quote Balance (" + quotePair.get() + ")")
+	orderSizeLabel.config(text="    Order Size (" + quotePair.get() + ")")
+	priceRangeLabel.config(text="    Price Range (" + quotePair.get() + ")")
+	gridDistanceLabel.config(text="    Grid Distance (" + quotePair.get() + ")")
 
 #Create function for run button
 def openRun():
@@ -186,11 +190,11 @@ def tradingPairChanged(event):
 	'''
 	Update settings page with new trading pair
 	'''
-	tradePairBalanceLabel.config(text="    Base Balance (" + tradingPair.get().split('_')[0] + ")")
-	quotePairBalanceLabel.config(text="    Quote Balance (" + tradingPair.get().split('_')[1] + ")")
-	orderSizeLabel.config(text="    Order Size (" + tradingPair.get().split('_')[1] + ")")
-	priceRangeLabel.config(text="    Price Range (" + tradingPair.get().split('_')[1] + ")")
-	gridDistanceLabel.config(text="    Grid Distance (" + tradingPair.get().split('_')[1] + ")")
+	tradePairBalanceLabel.config(text="    Base Balance (" + tradingPair.get() + ")")
+	quotePairBalanceLabel.config(text="    Quote Balance (" + quotePair.get() + ")")
+	orderSizeLabel.config(text="    Order Size (" + quotePair.get() + ")")
+	priceRangeLabel.config(text="    Price Range (" + quotePair.get() + ")")
+	gridDistanceLabel.config(text="    Grid Distance (" + quotePair.get() + ")")
 
 
 def stratMenuChanged(event):
@@ -279,6 +283,23 @@ def sendTelegramMessage(message, isATest):
 	response = requests.get(messageSender)
 	return response.json()
 
+#Create an instance of exchange object and check connection
+myExchange = exchangeInfo()
+connectionStatus = myExchange.checkConnection()
+if connectionStatus:
+	print("Connected to exchange")
+else:
+	messagebox.showinfo("Error", "There was an error connecting to the exchange. Application will now exit.")
+
+#Load list of available exchange pairs
+ethPairs = myExchange.getAllPairs("ETH")
+#btcPairs = myExchange.getAllPairs("BTC")
+#cosPairs = myExchange.getAllPairs("COS")
+#usdPairs = myExchange.getAllPairs("USD")
+#eurPairs = myExchange.getAllPairs("EUR")
+#usdtPairs = myExchange.getAllPairs("USDT")
+#daiPairs = myExchange.getAllPairs("DAI")
+
 #Create the root UI
 root = tk.Tk()
 #root.configure(bg='#282923')
@@ -337,20 +358,33 @@ privateLabel.grid(row=2, sticky="W")
 privateAPIKeyBox = tk.Entry(settingsFrame, show="*", width=46)
 privateAPIKeyBox.grid(row=2, column=1)
 
-tk.Label(settingsFrame, text="", bg=BACKGROUND).grid(row=3)
+#tk.Label(settingsFrame, text="", bg=BACKGROUND).grid(row=3)
+tradingPairText = tk.Label(settingsFrame, text="   Quote Pair")
+tradingPairText.config(relief=FLAT, bg=BACKGROUND, fg=FOREGROUND)
+tradingPairText.grid(row=3, column=0, sticky="W")
+quotePairOptions = [
+    "ETH",
+    "BTC",
+    "COS",
+    "USDT",
+    "DAI",
+    "USD",
+    "EUR"
+]
+quotePair = StringVar(settingsFrame)
+quotePair.set(quotePairOptions[0])
+quoteMenu = OptionMenu(*(settingsFrame, quotePair) + tuple(quotePairOptions), command=tradingPairChanged)
+quoteMenu.config(bg=BACKGROUND, fg=FOREGROUND, relief=FLAT)
+quoteMenu["menu"].config(bg=BACKGROUND, fg=FOREGROUND, relief=FLAT)
+quoteMenu["highlightthickness"]=0
+quoteMenu.grid(row=3, column=1)
 
-tradingPairText = tk.Label(settingsFrame, text="   Trading Pair")
+tradingPairText = tk.Label(settingsFrame, text="   Trade Pair")
 tradingPairText.config(relief=FLAT, bg=BACKGROUND, fg=FOREGROUND)
 tradingPairText.grid(row=4, column=0, sticky="W")
-tradingPairOptions = [
-    "COS_ETH",
-    "COS_BTC",
-    "ETH_BTC",
-    "SATTY_USDT"
-]
 tradingPair = StringVar(settingsFrame)
-tradingPair.set(tradingPairOptions[0]) # initial value
-pairMenu = OptionMenu(*(settingsFrame, tradingPair) + tuple(tradingPairOptions), command=tradingPairChanged)
+tradingPair.set(ethPairs[0]) # initial value
+pairMenu = OptionMenu(*(settingsFrame, tradingPair) + tuple(ethPairs), command=tradingPairChanged)
 pairMenu.config(bg=BACKGROUND, fg=FOREGROUND, relief=FLAT)
 pairMenu["menu"].config(bg=BACKGROUND, fg=FOREGROUND, relief=FLAT)
 pairMenu["highlightthickness"]=0
@@ -387,7 +421,7 @@ gridStratFrame = tk.Frame(root, bg="#182923")
 tk.Label(gridStratFrame, text="                         ", bg="#182923").grid(row=0, column=1)
 tk.Label(gridStratFrame, text="Available Balances", bg="#182923", fg=FOREGROUND, font='Helvetica 8 bold').grid(row=1, column=1)
 
-tradePairBalanceLabel = tk.Label(gridStratFrame, text="    Base Balance (" + tradingPair.get().split('_')[0] + ")")
+tradePairBalanceLabel = tk.Label(gridStratFrame, text="    Base Balance (" + tradingPair.get() + ")")
 tradePairBalanceLabel.config(relief=FLAT, bg="#182923", fg=FOREGROUND)
 tradePairBalanceLabel.grid(row=2, column=0, sticky="W")
 tradePairBalanceBox = tk.Text(gridStratFrame, width=12, height=1)
@@ -395,7 +429,7 @@ tradePairBalanceBox.insert(tk.END, "30000")
 tradePairBalanceBox.config(state="disabled", bg="#182923", fg=FOREGROUND)
 tradePairBalanceBox.grid(row=2, column=2)
 
-quotePairBalanceLabel = tk.Label(gridStratFrame, text="    Quote Balance (" + tradingPair.get().split('_')[1] + ")")
+quotePairBalanceLabel = tk.Label(gridStratFrame, text="    Quote Balance (" + quotePair.get() + ")")
 quotePairBalanceLabel.config(relief=FLAT, bg="#182923", fg=FOREGROUND)
 quotePairBalanceLabel.grid(row=3, column=0, sticky="W")
 quotePairBalanceBox = tk.Text(gridStratFrame, width=12, height=1)
@@ -406,7 +440,7 @@ quotePairBalanceBox.grid(row=3, column=2)
 tk.Label(gridStratFrame, text="                         ", bg="#182923").grid(row=4, column=1)
 tk.Label(gridStratFrame, text="Grid Settings", bg="#182923", fg=FOREGROUND, font='Helvetica 8 bold').grid(row=5, column=1)
 
-orderSizeLabel = tk.Label(gridStratFrame, text="    Order Size (" + tradingPair.get().split('_')[1] + ")")
+orderSizeLabel = tk.Label(gridStratFrame, text="    Order Size (" + quotePair.get() + ")")
 orderSizeLabel.config(relief=FLAT, bg="#182923", fg=FOREGROUND)
 orderSizeLabel.grid(row=6, column=0, sticky="W")
 orderSizeBox = tk.Text(gridStratFrame, width=12, height=1)
@@ -414,7 +448,7 @@ orderSizeBox.insert(tk.END, "0.015")
 orderSizeBox.config(bg="white", fg="black")
 orderSizeBox.grid(row=6, column=2)
 
-gridDistanceLabel = tk.Label(gridStratFrame, text="    Grid Distance (" + tradingPair.get().split('_')[1] + ")")
+gridDistanceLabel = tk.Label(gridStratFrame, text="    Grid Distance (" + quotePair.get() + ")")
 gridDistanceLabel.config(relief=FLAT, bg="#182923", fg=FOREGROUND)
 gridDistanceLabel.grid(row=7, column=0, sticky="W")
 gridDistanceBox = tk.Text(gridStratFrame, width=12, height=1)
@@ -422,7 +456,7 @@ gridDistanceBox.insert(tk.END, "0.000001")
 gridDistanceBox.config(bg="white", fg="black")
 gridDistanceBox.grid(row=7, column=2)
 
-priceRangeLabel = tk.Label(gridStratFrame, text="    Price Range (" + tradingPair.get().split('_')[1] + ")")
+priceRangeLabel = tk.Label(gridStratFrame, text="    Price Range (" + quotePair.get() + ")")
 priceRangeLabel.config(relief=FLAT, bg="#182923", fg=FOREGROUND)
 priceRangeLabel.grid(row=8, column=0, sticky="W")
 lowerPriceBox = tk.Text(gridStratFrame, width=12, height=1)
@@ -543,13 +577,13 @@ if telegramVar.get() == 0:
 	tokenBox.config(state="disabled")
 	chatIDBox.config(state="disabled")
 
+#If telegram is enabled, alert user that bot was started
+initializeBot()
+
 #Start concurrent threads
 historyRefreshThread = threading.Thread(target=historyReresh)
 historyRefreshThread.daemon = True
 historyRefreshThread.start()
-
-#If telegram is enabled, alert user that bot was started
-initializeBot()
 
 root.mainloop()
 
