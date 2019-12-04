@@ -21,20 +21,6 @@ class gridBotStart:
 	def updateRunHistory(message):
 		print(message)
 
-	def getAllPairs(self, quotePair):
-		pairList = []
-		exchangeInfo = self.coss_client.get_exchange_info()
-		exchangeSymbols = exchangeInfo["symbols"]
-		symbolCount = 0
-		for allSymbols in exchangeSymbols:
-			actualQuotePair = exchangeSymbols[symbolCount]["symbol"].split('_')[1]
-			if actualQuotePair == quotePair:
-				pairList.append(exchangeSymbols[symbolCount]["symbol"])
-				#print(exchangeSymbols[symbolCount]["symbol"])
-			symbolCount = symbolCount + 1
-
-		return pairList
-
 	def gridStart(instanceName):
 		#Get Telegram settings
 		with open('telegramSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')

@@ -46,9 +46,26 @@ BTNFRAMEBG = CANVASBG
 
 def initializeBot():
 	#Check if this is a first time run
+	with open('firstRun.txt', 'rb') as f:
+		isFirstRun = pickle.load(f)
+
+	if isFirstRun == 0:
+		messagebox.showinfo("Hello World", "Welcome to 1Click Cos Bot")
+		with open('firstRun.txt', 'wb') as f:
+			pickle.dump(1, f)
+
+	#Check if valid API keys are available
+	with open('gridSettings.conf', 'rb') as f:
+		quotesPair, tradePair, publicKey, privateKey, orderSize, gridDistance, lowerPrice, higherPrice, numberGrids = pickle.load(f)
+
+	testExchange = exchangeInfo(publicKey, privateKey)
+	if testExchange.testKey():
+		print("Valid API keys loaded")
+	else:
+		messagebox.showinfo("Invalid", "API keys are invalid, please update them in the strategy tab.")
 
 	#Load telegram settings
-	with open('telegramSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
+	with open('telegramSettings.conf', 'rb') as f:
 		isTelegramEnabled, getTelegramToken, getTelegramChatID = pickle.load(f)
 	if isTelegramEnabled:
 		enableTelegramChk.select()
@@ -61,6 +78,7 @@ def initializeBot():
 	if isTelegramEnabled:
 		sendTelegramMessage("An instance of your 1Click COS bot was just launched. If this wasn't you please login to your COSS account and disable your API keys immediately.", False)
 
+#Clear all frames
 def clearFrames():
 	homeFrame.place_forget()
 	settingsFrame.place_forget()
@@ -100,8 +118,8 @@ def openSettings():
 	#Load all grid strategy settings
 	# Load Grid Settings: publicKey, privateKey, orderSize, gridDistance, lowerPrice, higherPrice, numberOfGrids
 	with open('gridSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
-		tradePair, publicKey, privateKey, orderSize, gridDistance, lowerPrice, higherPrice, numberGrids = pickle.load(f)
-	tradingPair.set(tradePair)
+		quotesPair, tradePair, publicKey, privateKey, orderSize, gridDistance, lowerPrice, higherPrice, numberGrids = pickle.load(f)
+	quotePair.set(quotesPair)
 	publicAPIKeyBox.delete(0, tk.END)
 	publicAPIKeyBox.insert(tk.END, publicKey)
 	privateAPIKeyBox.delete(0, tk.END)
@@ -115,12 +133,8 @@ def openSettings():
 	higherPriceBox.delete('1.0', tk.END)
 	higherPriceBox.insert(tk.END, higherPrice)
 	numberOfGrids.set(numberGrids)
-
-	tradePairBalanceLabel.config(text="    Base Balance (" + tradingPair.get() + ")")
-	quotePairBalanceLabel.config(text="    Quote Balance (" + quotePair.get() + ")")
-	orderSizeLabel.config(text="    Order Size (" + quotePair.get() + ")")
-	priceRangeLabel.config(text="    Price Range (" + quotePair.get() + ")")
-	gridDistanceLabel.config(text="    Grid Distance (" + quotePair.get() + ")")
+	quotePairChanged(None)
+	tradingPairChanged(None, tradePair)
 
 #Create function for run button
 def openRun():
@@ -138,10 +152,10 @@ def openRun():
 	runStrategyBox.config(state="disabled")
 	runTradePairBox.config(state="normal")
 	runTradePairBox.delete('1.0', tk.END)
-	runTradePairBox.insert(tk.END, tradingPair.get())
+	runTradePairBox.insert(tk.END, tradingPair.get() + "_" + quotePair.get())
 	runTradePairBox.config(state="disabled")
 	runInstanceNameBox.delete('1.0', tk.END)
-	runInstanceNameBox.insert(tk.END, tradingStrat.get().replace(" ", "") + "_" + tradingPair.get().replace(" ", ""))
+	runInstanceNameBox.insert(tk.END, tradingStrat.get().replace(" ", "") + "_" + tradingPair.get().replace(" ", "") + "_" + quotePair.get().replace(" ", ""))
 
 	runFrame.place(relwidth=FRAMEHEIGHT, relheight=FRAMEWIDTH, relx=FRAMEPADX, rely=FRAMEPADY)
 
@@ -186,16 +200,33 @@ def historyReresh():
 			historyTextField.insert(tk.END, f2.read())
 		time.sleep(1)
 
-def tradingPairChanged(event):
+def tradingPairChanged(event, pair):
 	'''
 	Update settings page with new trading pair
 	'''
-	tradePairBalanceLabel.config(text="    Base Balance (" + tradingPair.get() + ")")
+	if pair != "blank":
+		tradingPair.set(pair)
+	tradePairBalanceLabel.config(text="    Trade Balance (" + tradingPair.get() + ")")
+
+def quotePairChanged(event):
+
+	#Update trading pair options
+	allPairs = myExchange.getAllPairs(str(quotePair.get()))
+	allPairs.sort()
+	tradingPair.set(allPairs[0])
+	pairMenu['menu'].delete(0, 'end')
+
+    # Insert list of new options (tk._setit hooks them up to var)
+	new_choices = allPairs
+	tradingEventWithArgs = partial(tradingPairChanged, None)
+	for choice in new_choices:
+		pairMenu['menu'].add_command(label=choice, command=partial(tradingPairChanged, None, choice))
+	tradingPairChanged(None, "blank")
+
 	quotePairBalanceLabel.config(text="    Quote Balance (" + quotePair.get() + ")")
 	orderSizeLabel.config(text="    Order Size (" + quotePair.get() + ")")
 	priceRangeLabel.config(text="    Price Range (" + quotePair.get() + ")")
 	gridDistanceLabel.config(text="    Grid Distance (" + quotePair.get() + ")")
-
 
 def stratMenuChanged(event):
 	'''
@@ -210,12 +241,21 @@ def stratMenuChanged(event):
 	#print("Strategy was changed to " + tradingStrat.get())
 
 def saveStrategy():
+	#Check if API keys are correct
+	testPublicKey = publicAPIKeyBox.get().strip()
+	testPrivateKey = privateAPIKeyBox.get().strip()
+	testKeys = exchangeInfo(testPublicKey, testPrivateKey)
+	if testKeys.testKey():
+		messagebox.showinfo("Saved", "Your strategy settings will be applied")
+	else:
+		messagebox.showinfo("Invalid", "Looks like you entered invalid API keys, please try again")
+		return 0
+
 	#Save all settings to gridSettings.conf
 	with open('gridSettings.conf', 'wb') as f:
-	    pickle.dump([tradingPair.get().strip(), publicAPIKeyBox.get().strip(), privateAPIKeyBox.get().strip(), orderSizeBox.get("1.0", tk.END).strip(), gridDistanceBox.get("1.0", tk.END).strip(), lowerPriceBox.get("1.0", tk.END).strip(), higherPriceBox.get("1.0", tk.END).strip(), numberOfGrids.get()], f)
-
-	messagebox.showinfo("Saved", "Your strategy settings have been applied")
+	    pickle.dump([quotePair.get().strip(), tradingPair.get().strip(), testPublicKey, testPrivateKey, orderSizeBox.get("1.0", tk.END).strip(), gridDistanceBox.get("1.0", tk.END).strip(), lowerPriceBox.get("1.0", tk.END).strip(), higherPriceBox.get("1.0", tk.END).strip(), numberOfGrids.get()], f)
 	openRun()
+	return 1
 
 def startStrategy():
 	
@@ -285,20 +325,13 @@ def sendTelegramMessage(message, isATest):
 
 #Create an instance of exchange object and check connection
 myExchange = exchangeInfo()
-connectionStatus = myExchange.checkConnection()
-if connectionStatus:
-	print("Connected to exchange")
-else:
-	messagebox.showinfo("Error", "There was an error connecting to the exchange. Application will now exit.")
 
-#Load list of available exchange pairs
-ethPairs = myExchange.getAllPairs("ETH")
-#btcPairs = myExchange.getAllPairs("BTC")
-#cosPairs = myExchange.getAllPairs("COS")
-#usdPairs = myExchange.getAllPairs("USD")
-#eurPairs = myExchange.getAllPairs("EUR")
-#usdtPairs = myExchange.getAllPairs("USDT")
-#daiPairs = myExchange.getAllPairs("DAI")
+try:
+	connectionStatus = myExchange.checkConnection()
+	print("Connected to exchange")
+except:
+	messagebox.showinfo("Error", "There was an error connecting to the exchange, please check your internet connection. Application will now exit.")
+	exit(0)
 
 #Create the root UI
 root = tk.Tk()
@@ -331,7 +364,7 @@ homeInfo = tk.Text(homeFrame, relief=FLAT, fg=FOREGROUND, bg=BACKGROUND, height=
 homeInfo.pack()
 homeInfo.insert(tk.END, "\n1Click COSS Bot - version 0.1\n\nTo get started please first customize your bot\nfrom the strategy tab. You can also enable\ntelegram messaging from the settings tab.")
 homeInfo.insert(tk.END, "\n\nOnce configured you can run the bot from the\nrun tab")
-homeInfo.insert(tk.END, "\n\nLatest Updates (11/21/2019)\n---------------------------\n - First live build of 1Click COSS bot\n - Added support for grid strategy\n - Added Settings page to customize bot\n - Added History page to keep track of trades\n - Added UI for ease of use")
+homeInfo.insert(tk.END, "\n\nLatest Updates (12/03/2019)\n---------------------------\n - First live build of 1Click COSS bot\n - Added support for grid strategy\n - Added Settings page to customize bot\n - Added History page to keep track of trades\n - Added UI for ease of use")
 homeInfo.insert(tk.END, "\n\nTrading is very risky, the use of this tool may\nresult in significant losses")
 homeInfo.insert(tk.END, "\n\nTo protect your primary COSS account, always\ncreate a second account for use with public\ntrading bots.")
 homeInfo.config(state="disabled")
@@ -346,13 +379,13 @@ else:
 #Define Settings page UI elements
 tk.Label(settingsFrame, text="", bg=BACKGROUND).grid(row=0)
 
-publicLabel = tk.Label(settingsFrame, text="   Public Key")
+publicLabel = tk.Label(settingsFrame, text="   Public API Key")
 publicLabel.config(relief=FLAT, bg=BACKGROUND, fg=FOREGROUND)
 publicLabel.grid(row=1, sticky="W")
 publicAPIKeyBox = tk.Entry(settingsFrame, show="*", width=46)
 publicAPIKeyBox.grid(row=1, column=1)
 
-privateLabel = tk.Label(settingsFrame, text="   Private Key")
+privateLabel = tk.Label(settingsFrame, text="   Private API Key")
 privateLabel.config(relief=FLAT, bg=BACKGROUND, fg=FOREGROUND)
 privateLabel.grid(row=2, sticky="W")
 privateAPIKeyBox = tk.Entry(settingsFrame, show="*", width=46)
@@ -373,7 +406,7 @@ quotePairOptions = [
 ]
 quotePair = StringVar(settingsFrame)
 quotePair.set(quotePairOptions[0])
-quoteMenu = OptionMenu(*(settingsFrame, quotePair) + tuple(quotePairOptions), command=tradingPairChanged)
+quoteMenu = OptionMenu(*(settingsFrame, quotePair) + tuple(quotePairOptions), command=quotePairChanged)
 quoteMenu.config(bg=BACKGROUND, fg=FOREGROUND, relief=FLAT)
 quoteMenu["menu"].config(bg=BACKGROUND, fg=FOREGROUND, relief=FLAT)
 quoteMenu["highlightthickness"]=0
@@ -382,9 +415,13 @@ quoteMenu.grid(row=3, column=1)
 tradingPairText = tk.Label(settingsFrame, text="   Trade Pair")
 tradingPairText.config(relief=FLAT, bg=BACKGROUND, fg=FOREGROUND)
 tradingPairText.grid(row=4, column=0, sticky="W")
+tradingPairOptions = [
+	"Temp",
+	"Temp2"
+]
 tradingPair = StringVar(settingsFrame)
-tradingPair.set(ethPairs[0]) # initial value
-pairMenu = OptionMenu(*(settingsFrame, tradingPair) + tuple(ethPairs), command=tradingPairChanged)
+tradingPair.set("temp") # initial value
+pairMenu = OptionMenu(*(settingsFrame, tradingPair) + tuple(tradingPairOptions), command=tradingPairChanged)
 pairMenu.config(bg=BACKGROUND, fg=FOREGROUND, relief=FLAT)
 pairMenu["menu"].config(bg=BACKGROUND, fg=FOREGROUND, relief=FLAT)
 pairMenu["highlightthickness"]=0
@@ -421,7 +458,7 @@ gridStratFrame = tk.Frame(root, bg="#182923")
 tk.Label(gridStratFrame, text="                         ", bg="#182923").grid(row=0, column=1)
 tk.Label(gridStratFrame, text="Available Balances", bg="#182923", fg=FOREGROUND, font='Helvetica 8 bold').grid(row=1, column=1)
 
-tradePairBalanceLabel = tk.Label(gridStratFrame, text="    Base Balance (" + tradingPair.get() + ")")
+tradePairBalanceLabel = tk.Label(gridStratFrame, text="    Trade Balance (" + tradingPair.get() + ")")
 tradePairBalanceLabel.config(relief=FLAT, bg="#182923", fg=FOREGROUND)
 tradePairBalanceLabel.grid(row=2, column=0, sticky="W")
 tradePairBalanceBox = tk.Text(gridStratFrame, width=12, height=1)

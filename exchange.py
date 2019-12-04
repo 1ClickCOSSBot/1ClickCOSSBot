@@ -6,10 +6,14 @@ import requests
 
 class exchangeInfo:
 
-	def __init__(self):
-		#Create pycoss object with API keys
-		with open('gridSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
-			    tradePair, publicKey, privateKey, orderSize, gridDistance, lowerPrice, higherPrice, numberOfGrids = pickle.load(f)
+	def __init__(self, getPublicKey = None, getPrivateKey=None):
+		if getPublicKey is None and getPrivateKey is None:
+			#Create pycoss object with API keys
+			with open('gridSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
+				quotesPair, tradePair, publicKey, privateKey, orderSize, gridDistance, lowerPrice, higherPrice, numberOfGrids = pickle.load(f)
+		else:
+			publicKey = getPublicKey
+			privateKey = getPrivateKey
 		self.coss_client = PyCOSSClient(api_public=publicKey,
 		                           api_secret=privateKey)
 
@@ -33,6 +37,13 @@ class exchangeInfo:
 			symbolCount = symbolCount + 1
 
 		return pairList
+
+	def testKey(self):
+		try:
+			self.coss_client.get_balances()
+			return True
+		except:
+			return False
 
 '''
 myExchange = exchangeInfo()
