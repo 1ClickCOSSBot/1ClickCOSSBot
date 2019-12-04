@@ -37,6 +37,8 @@ BTNPADX_L=14
 BTNPADX_S=10
 BTNPADX_M=12
 BTNPADY=5
+HISTORYWIDTH=47
+HISTORYHEIGHT=27.4
 
 if os.name != "nt":
 	CANVASHEIGHT=600
@@ -49,6 +51,8 @@ if os.name != "nt":
 	BTNPADX_S=20
 	BTNPADX_M=22
 	BTNPADY=7
+	HISTORYWIDTH=66
+	HISTORYHEIGHT=25
 
 #UI Colors
 CANVASBG = "black"
@@ -624,7 +628,7 @@ aboutInfo.config(state="disabled")
 scroll = Scrollbar(historyFrame)
 scroll.grid(row=1, column=2, sticky="W", ipady=191.70)
 tk.Label(historyFrame, text="", bg=BACKGROUND).grid(row=0, column=0)
-historyTextField = tk.Text(historyFrame, bg=BACKGROUND, fg=FOREGROUND, yscrollcommand=scroll.set, width=47, height=27.4)
+historyTextField = tk.Text(historyFrame, bg=BACKGROUND, fg=FOREGROUND, yscrollcommand=scroll.set, width=HISTORYWIDTH, height=HISTORYHEIGHT)
 historyTextField.grid(row=1, column=1, sticky="W")
 scroll.config(command=historyTextField.yview)
 
