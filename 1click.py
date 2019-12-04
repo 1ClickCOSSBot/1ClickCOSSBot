@@ -49,6 +49,8 @@ def initializeBot():
 	with open('firstRun.txt', 'rb') as f:
 		isFirstRun = pickle.load(f)
 
+
+
 	if isFirstRun == 0:
 		messagebox.showinfo("Hello World", "Welcome to 1Click Cos Bot")
 		with open('firstRun.txt', 'wb') as f:
@@ -128,11 +130,6 @@ def openSettings():
 	higherPriceBox.insert(tk.END, higherPrice)
 	numberOfGrids.set(numberGrids)
 	quotePairChanged(None)
-	tradingPairChanged(None, tradePair)
-
-	#Load selected pair balances
-	balances = myExchange.getCryptoBalance(quotesPair, tradePair)
-	print(balances)
 
 #Create function for run button
 def openRun():
@@ -206,6 +203,39 @@ def tradingPairChanged(event, pair):
 		tradingPair.set(pair)
 	tradePairBalanceLabel.config(text="    Trade Balance (" + tradingPair.get() + ")")
 
+	#Load selected pair balances
+	balances = {
+		"quote": 0.0,
+		"trade": 0.0
+	}
+	balancePublicKey = publicAPIKeyBox.get().strip()
+	balancePrivateKey = privateAPIKeyBox.get().strip()
+	balanceKeys = exchangeInfo(balancePublicKey, balancePrivateKey)
+	try:
+		balances = balanceKeys.getCryptoBalance(quotePair.get(), tradingPair.get())
+	except:
+		print("There was some error when loading balances")
+
+	if "quote" in balances:
+		quotePairBalanceBox.config(state="normal")
+		quotePairBalanceBox.delete('1.0', tk.END)
+		quotePairBalanceBox.insert(tk.END, balances["quote"])
+		quotePairBalanceBox.config(state="disabled")
+		tradePairBalanceBox.config(state="normal")
+		tradePairBalanceBox.delete('1.0', tk.END)
+		tradePairBalanceBox.insert(tk.END, balances["trade"])
+		tradePairBalanceBox.config(state="disabled")
+	else:
+		print("Cannot access balances due to API error")
+		quotePairBalanceBox.config(state="normal")
+		quotePairBalanceBox.delete('1.0', tk.END)
+		quotePairBalanceBox.insert(tk.END, "N/A")
+		quotePairBalanceBox.config(state="disabled")
+		tradePairBalanceBox.config(state="normal")
+		tradePairBalanceBox.delete('1.0', tk.END)
+		tradePairBalanceBox.insert(tk.END, "N/A")
+		tradePairBalanceBox.config(state="disabled")
+
 def quotePairChanged(event):
 
 	#Update trading pair options
@@ -245,6 +275,7 @@ def saveStrategy():
 	testKeys = exchangeInfo(testPublicKey, testPrivateKey)
 	if testKeys.testKey():
 		messagebox.showinfo("Saved", "Your strategy settings will be applied")
+		myExchange = testKeys
 	else:
 		messagebox.showinfo("Invalid", "Looks like you entered invalid API keys, please try again")
 		return 0
@@ -257,12 +288,14 @@ def saveStrategy():
 
 def startStrategy():
 	
-	strategyWithArg = partial(strategyThread, runInstanceNameBox.get("1.0", tk.END).replace(" ", ""))
-	strategyTestThread = threading.Thread(target=strategyWithArg)
-	strategyTestThread.daemon = True
-	strategyTestThread.start()
+	messagebox.showinfo("Disabled", "Trading functions are not yet enabled")
+	if False:
+		strategyWithArg = partial(strategyThread, runInstanceNameBox.get("1.0", tk.END).replace(" ", ""))
+		strategyTestThread = threading.Thread(target=strategyWithArg)
+		strategyTestThread.daemon = True
+		strategyTestThread.start()
 
-	openHistory()
+		openHistory()
 
 def strategyThread(name):
 	myGridBot = gridBotStart

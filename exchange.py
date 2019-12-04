@@ -17,8 +17,6 @@ class exchangeInfo:
 				quotesPair, tradePair, storedPublicKey, storedPrivateKey, orderSize, gridDistance, lowerPrice, higherPrice, numberOfGrids = pickle.load(f)
 
 		if myPublicKey is None:
-			print("Stored Public Key: " + storedPublicKey)
-			print("Stored Private Key: " + storedPrivateKey)
 			self.coss_client = PyCOSSClient(api_public=storedPublicKey, api_secret=storedPrivateKey)
 		else:
 			self.coss_client = PyCOSSClient(api_public=myPublicKey, api_secret=myPrivateKey)
@@ -47,37 +45,37 @@ class exchangeInfo:
 		try:
 			result = self.coss_client.get_balances()
 		except:
-			return False
-
-		print(result)
-
+			print("Failed to connect to exchange with provided API")
 		if 'error' in result:
-			return False
-		else:
+			return "Connected but failed to get data, API keys may be invalid"
+		elif 'available' in result:
 			return True
 
-	def getCryptoBalance(self, quote, trade):
-		returnBalances = []
+		return "Failed to Connect"
 
-		#print(self.publicKey)
-		#print(self.privateKey)
 
-		
-		allPairBalances = self.coss_client.get_balances()
-		
-		##print("Failed to get user balances")
-		#return 0 
+	def getCryptoBalance(self, quote = None, trade = None):
+		try:
+			result = self.coss_client.get_balances()
+		except:
+			print("Failed to connect")
+			return "Failed to connect"
 
-		print(allPairBalances)
+		if 'error' in result:
+			print("API Error")
+			return "Connected but Failed to get data, API keys may be invalid"
+		else:
+			#Get quote and trade pair balance
+			returnBalances = {
+				"quote": 0.0,
+				"trade": 0.0
+			}
+			pairCount = 0
+			for balances in result:
+				if result[pairCount]['currency_code'] == quote:
+					returnBalances["quote"] = result[pairCount]['available']
+				elif result[pairCount]['currency_code'] == trade:
+					returnBalances["trade"] = result[pairCount]['available']
+				pairCount = pairCount + 1
 
-		'''
-		pairCount = 0
-		print(allPairBalances)
-		for balances in allPairBalances:
-			if allPairBalances[pairCount]['currency_code'] == quote or allPairBalances[pairCount]['currency_code'] == trade:
-				returnBalances.append(allPairBalances[pairCount]['available'])
-			pairCount = pairCount + 1
-
-		return returnBalances
-		'''
-		return "ended"
+			return returnBalances
