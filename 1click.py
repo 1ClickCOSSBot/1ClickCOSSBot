@@ -33,6 +33,22 @@ FRAMEHEIGHT=0.8
 FRAMEWIDTH=0.8
 FRAMEPADX=0.1
 FRAMEPADY=0.125
+BTNPADX_L=14
+BTNPADX_S=10
+BTNPADX_M=12
+BTNPADY=5
+
+if os.name != "nt":
+	CANVASHEIGHT=600
+	CANVASWIDTH=700
+	FRAMEHEIGHT=0.8
+	FRAMEWIDTH=0.9
+	FRAMEPADX=0.1
+	FRAMEPADY=0.125
+	BTNPADX_L=24
+	BTNPADX_S=20
+	BTNPADX_M=22
+	BTNPADY=7
 
 #UI Colors
 CANVASBG = "black"
@@ -375,13 +391,13 @@ historyFrame = tk.Frame(root,bg=BACKGROUND)
 notificationFrame = tk.Frame(root, bg=BACKGROUND)
 botOptionsFrame = tk.Frame(root, bg=BACKGROUND)
 img = ImageTk.PhotoImage(Image.open("coss.png"))
-homeBtn = tk.Button(root, text="Home", padx=10, pady=5, fg=BTNCLICKEDFG, bg=BTNCLICKEDBG, height=1, width=4, command=openHome, relief=FLAT)
-runBtn = tk.Button(root, text="Run", padx=10, pady=5, fg=BTNFG, bg=BTNBG, height=1, width=4, command=openRun, relief=FLAT)
-settingsBtn = tk.Button(root, text="Strategy", padx=10, pady=5, fg=BTNFG, bg=BTNBG, height=1, width=4, command=openSettings, relief=FLAT)
-historyBtn = tk.Button(root, text="History", padx=10, pady=5, fg=BTNFG, bg=BTNBG, height=1, width=4, command=openHistory, relief=FLAT)
-botOptionBtn = tk.Button(root, text="Settings", padx=12, pady=5, fg=BTNFG, bg=BTNBG, height=1, width=4, command=openOptions, relief=FLAT)
-aboutBtn = tk.Button(root, text="About", padx=10, pady=5, fg=BTNFG, bg=BTNBG, height=1, width=4, command=openAbout, relief=FLAT)
-exchangeBtn = tk.Button(root, text="Extras", padx=14, pady=5, fg="white", bg="#663399", height=1, width=4, command=openAbout, relief=FLAT)
+homeBtn = tk.Button(root, text="Home", padx=BTNPADX_S, pady=5, highlightbackground=BTNFRAMEBG, fg=BTNCLICKEDFG, bg=BTNCLICKEDBG, height=1, width=4, command=openHome, relief=FLAT)
+runBtn = tk.Button(root, text="Run", padx=BTNPADX_S, pady=5, highlightbackground=BTNFRAMEBG, fg=BTNFG, bg=BTNBG, height=1, width=4, command=openRun, relief=FLAT)
+settingsBtn = tk.Button(root, text="Strategy", padx=BTNPADX_S, pady=5, highlightbackground=BTNFRAMEBG, fg=BTNFG, bg=BTNBG, height=1, width=4, command=openSettings, relief=FLAT)
+historyBtn = tk.Button(root, text="History", padx=BTNPADX_S, pady=5, highlightbackground=BTNFRAMEBG, fg=BTNFG, bg=BTNBG, height=1, width=4, command=openHistory, relief=FLAT)
+botOptionBtn = tk.Button(root, text="Settings", padx=BTNPADX_M, pady=5, highlightbackground=BTNFRAMEBG, fg=BTNFG, bg=BTNBG, height=1, width=4, command=openOptions, relief=FLAT)
+aboutBtn = tk.Button(root, text="About", padx=BTNPADX_S, pady=5, highlightbackground=BTNFRAMEBG, fg=BTNFG, bg=BTNBG, height=1, width=4, command=openAbout, relief=FLAT)
+exchangeBtn = tk.Button(root, text="Extras", padx=BTNPADX_L, pady=5, highlightbackground=BTNFRAMEBG, fg="white", bg="#663399", height=1, width=4, command=openAbout, relief=FLAT)
 
 #Define Home page UI elements
 homeInfo = tk.Text(homeFrame, relief=FLAT, fg=FOREGROUND, bg=BACKGROUND, height=24, width=47)
@@ -469,7 +485,7 @@ stratMenu.grid(row=5, column=1)
 #Define bottom frame for Settings page apply button
 saveStratFrame = tk.Frame(settingsFrame, bg=BACKGROUND)
 saveStratFrame.place(relwidth=FRAMEWIDTH*1.25, relheight=FRAMEHEIGHT/6.5, relx=0, rely=FRAMEPADY*7.2)
-saveBtn = tk.Button(saveStratFrame, text="Save", padx=10, pady=5, fg=BTNFG, bg=BTNBG, height=1, width=4, command=saveStrategy, relief=FLAT)
+saveBtn = tk.Button(saveStratFrame, text="Save", padx=10, pady=5, highlightbackground=BACKGROUND, fg=BTNFG, bg=BTNBG, height=1, width=4, command=saveStrategy, relief=FLAT)
 saveBtn.pack()
 #tk.Label(saveStratFrame, text="This strategy is not yet implemented", bg="#482923", fg=FOREGROUND).pack()
 
@@ -568,7 +584,7 @@ enableDemoChk.grid(row=4, sticky="W")
 #Define bottom frame for run page start button
 startRunFrame = tk.Frame(runFrame, bg=BACKGROUND)
 startRunFrame.place(relwidth=FRAMEWIDTH*1.25, relheight=FRAMEHEIGHT/6.5, relx=0, rely=FRAMEPADY*7.2)
-startBtn = tk.Button(startRunFrame, text="Start", padx=10, pady=5, fg=BTNFG, bg=BTNBG, height=1, width=4, command=startStrategy, relief=FLAT)
+startBtn = tk.Button(startRunFrame, text="Start", padx=10, pady=5, highlightbackground=BACKGROUND, fg=BTNFG, bg=BTNBG, height=1, width=4, command=startStrategy, relief=FLAT)
 startBtn.pack()
 
 #Define Options page UI elements
@@ -580,7 +596,7 @@ enableTelegramChk.config(bg=BACKGROUND, fg="red")
 enableTelegramChk.grid(row=1, sticky="W")
 
 testMessage_withArg = partial(sendTelegramMessage, "This is a test!", True)
-testTelegramBtn = tk.Button(botOptionsFrame, text="Test and Save", padx=25, fg="white", bg="#082923", height=1, width=4, command=testMessage_withArg, relief=FLAT)
+testTelegramBtn = tk.Button(botOptionsFrame, text="Test and Save", padx=35, highlightbackground=BTNFRAMEBG, fg="white", bg="#082923", height=1, width=4, command=testMessage_withArg, relief=FLAT)
 testTelegramBtn.grid(row=1, column=2)
 
 tokenLabel = tk.Label(botOptionsFrame, text=" Bot Token")
