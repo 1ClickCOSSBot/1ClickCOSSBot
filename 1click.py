@@ -58,12 +58,6 @@ def initializeBot():
 	with open('gridSettings.conf', 'rb') as f:
 		quotesPair, tradePair, publicKey, privateKey, orderSize, gridDistance, lowerPrice, higherPrice, numberGrids = pickle.load(f)
 
-	testExchange = exchangeInfo(publicKey, privateKey)
-	if testExchange.testKey():
-		print("Valid API keys loaded")
-	else:
-		messagebox.showinfo("Invalid", "API keys are invalid, please update them in the strategy tab.")
-
 	#Load telegram settings
 	with open('telegramSettings.conf', 'rb') as f:
 		isTelegramEnabled, getTelegramToken, getTelegramChatID = pickle.load(f)
@@ -135,6 +129,10 @@ def openSettings():
 	numberOfGrids.set(numberGrids)
 	quotePairChanged(None)
 	tradingPairChanged(None, tradePair)
+
+	#Load selected pair balances
+	balances = myExchange.getCryptoBalance(quotesPair, tradePair)
+	print(balances)
 
 #Create function for run button
 def openRun():
@@ -325,13 +323,6 @@ def sendTelegramMessage(message, isATest):
 
 #Create an instance of exchange object and check connection
 myExchange = exchangeInfo()
-
-try:
-	connectionStatus = myExchange.checkConnection()
-	print("Connected to exchange")
-except:
-	messagebox.showinfo("Error", "There was an error connecting to the exchange, please check your internet connection. Application will now exit.")
-	exit(0)
 
 #Create the root UI
 root = tk.Tk()
