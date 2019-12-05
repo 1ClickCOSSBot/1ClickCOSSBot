@@ -149,7 +149,8 @@ def openSettings():
 	higherPriceBox.delete('1.0', tk.END)
 	higherPriceBox.insert(tk.END, higherPrice)
 	numberOfGrids.set(numberGrids)
-	quotePairChanged(None)
+	quotePairChanged(None, tradePair)
+
 
 #Create function for run button
 def openRun():
@@ -219,7 +220,7 @@ def tradingPairChanged(event, pair):
 	'''
 	Update settings page with new trading pair
 	'''
-	if pair != "blank":
+	if pair is not None:
 		tradingPair.set(pair)
 	tradePairBalanceLabel.config(text="    Trade Balance (" + tradingPair.get() + ")")
 
@@ -256,7 +257,7 @@ def tradingPairChanged(event, pair):
 		tradePairBalanceBox.insert(tk.END, "N/A")
 		tradePairBalanceBox.config(state="disabled")
 
-def quotePairChanged(event):
+def quotePairChanged(event, trade = None):
 
 	#Update trading pair options
 	allPairs = myExchange.getAllPairs(str(quotePair.get()))
@@ -269,7 +270,7 @@ def quotePairChanged(event):
 	tradingEventWithArgs = partial(tradingPairChanged, None)
 	for choice in new_choices:
 		pairMenu['menu'].add_command(label=choice, command=partial(tradingPairChanged, None, choice))
-	tradingPairChanged(None, "blank")
+	tradingPairChanged(None, trade)
 
 	quotePairBalanceLabel.config(text="    Quote Balance (" + quotePair.get() + ")")
 	orderSizeLabel.config(text="    Order Size (" + quotePair.get() + ")")

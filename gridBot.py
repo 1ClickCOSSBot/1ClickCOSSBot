@@ -19,7 +19,7 @@ class gridBotStart:
 		return response.json()
 
 	def updateRunHistory(message):
-		print(message)
+		print("Hello")	
 
 	def gridStart(instanceName):
 		#Get Telegram settings
