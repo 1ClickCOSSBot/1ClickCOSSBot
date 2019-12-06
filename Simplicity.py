@@ -72,7 +72,7 @@ def initializeBot():
 
 
 	if isFirstRun == 0:
-		messagebox.showinfo("Hello World", "Welcome to 1Click Cos Bot")
+		messagebox.showinfo("Hello World", "Welcome to Simplicity Cos Bot")
 		with open('firstRun.txt', 'wb') as f:
 			pickle.dump(1, f)
 
@@ -92,7 +92,7 @@ def initializeBot():
 	chatIDBox.insert(tk.END, getTelegramChatID.strip())
 
 	if isTelegramEnabled:
-		sendTelegramMessage("An instance of your 1Click COS bot was just launched. If this wasn't you please login to your COSS account and disable your API keys immediately.", False)
+		sendTelegramMessage("An instance Simplicity COSS bot was just launched. If this wasn't you please login to your COSS account and disable your API keys immediately.", False)
 
 #Clear all frames
 def clearFrames():
@@ -309,14 +309,14 @@ def saveStrategy():
 
 def startStrategy():
 	
-	messagebox.showinfo("Disabled", "Trading functions are not yet enabled")
-	if False:
-		strategyWithArg = partial(strategyThread, runInstanceNameBox.get("1.0", tk.END).replace(" ", ""))
-		strategyTestThread = threading.Thread(target=strategyWithArg)
-		strategyTestThread.daemon = True
-		strategyTestThread.start()
+	#messagebox.showinfo("Disabled", "Trading functions are not yet enabled")
+	#if False:
+	strategyWithArg = partial(strategyThread, runInstanceNameBox.get("1.0", tk.END).replace(" ", ""))
+	strategyTestThread = threading.Thread(target=strategyWithArg)
+	strategyTestThread.daemon = True
+	strategyTestThread.start()
 
-		openHistory()
+	openHistory()
 
 def strategyThread(name):
 	myGridBot = gridBotStart
@@ -407,9 +407,9 @@ exchangeBtn = tk.Button(root, text="Extras", padx=BTNPADX_L, pady=5, highlightba
 #Define Home page UI elements
 homeInfo = tk.Text(homeFrame, relief=FLAT, fg=FOREGROUND, bg=BACKGROUND, height=24, width=47)
 homeInfo.pack()
-homeInfo.insert(tk.END, "\n1Click COSS Bot - version 0.1\n\nTo get started please first customize your bot\nfrom the strategy tab. You can also enable\ntelegram messaging from the settings tab.")
+homeInfo.insert(tk.END, "\nSimplicity COSS Bot - version 0.1\n\nTo get started please first customize your bot\nfrom the strategy tab. You can also enable\ntelegram messaging from the settings tab.")
 homeInfo.insert(tk.END, "\n\nOnce configured you can run the bot from the\nrun tab")
-homeInfo.insert(tk.END, "\n\nLatest Updates (12/03/2019)\n---------------------------\n - First live build of 1Click COSS bot\n - Added support for grid strategy\n - Added Settings page to customize bot\n - Added History page to keep track of trades\n - Added UI for ease of use")
+homeInfo.insert(tk.END, "\n\nLatest Updates (12/03/2019)\n---------------------------\n - First live build of Simplicity COSS bot\n - Added support for grid strategy\n - Added Settings page to customize bot\n - Added History page to keep track of trades\n - Added UI for ease of use")
 homeInfo.insert(tk.END, "\n\nTrading is very risky, the use of this tool may\nresult in significant losses")
 homeInfo.insert(tk.END, "\n\nTo protect your primary COSS account, always\ncreate a second account for use with public\ntrading bots.")
 homeInfo.config(state="disabled")
@@ -634,7 +634,7 @@ historyTextField.grid(row=1, column=1, sticky="W")
 scroll.config(command=historyTextField.yview)
 
 #Setup UI elements
-root.winfo_toplevel().title("1Click COSS Bot")
+root.winfo_toplevel().title("Simplicity")
 
 if os.name == "nt":
 	root.iconbitmap('coss.ico')
