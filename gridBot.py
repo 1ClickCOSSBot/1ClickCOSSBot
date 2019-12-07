@@ -75,13 +75,11 @@ class gridBotStart:
 
 		#Check if any previous instance of the bot was running and update order history
 		if gridBotStart.checkOldOrders():
-			print("Looks like a previous instance of this bot has some open orders")
-			deleteOrders = tk.messagebox.askquestion("Bot orders exist", "Would you like to cancel all previous orders created by this bot instance or continue from the previous position?")
-			if deleteOrders == "yes":
-				print("Cancelling all orders from previous instance and starting over")
-		else:
-			print("Creating order database")
-			myOrders = {
-				id: 10000
-			}
-			gridBotStart.saveOrders(myOrders)
+			print("Previous orders exist canceling them now")
+			#Load orders and then cancel them one by one
+			loadOrdersToCancel = gridBotStart.loadOrders()
+			for orders in loadOrdersToCancel:
+				print("Deleting order")
+
+		#Load strategy settings
+		
