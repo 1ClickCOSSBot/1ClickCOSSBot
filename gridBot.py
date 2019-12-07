@@ -49,17 +49,9 @@ class gridBotStart:
 
 	def loadOrders():
 		orders = 0
-		print("Loading orders")
 		with open('orderDb.pickle', 'rb') as handle:
 			orders = pickle.load(handle)
 		return orders
-
-	def checkOldOrders():
-		#Check if an old order file exists
-		if os.path.exists("orderDb.pickle"):
-			return True
-		else:
-			return False
 
 	def gridStart(instanceName):
 		#Get Telegram settings
@@ -74,7 +66,7 @@ class gridBotStart:
 		gridBotStart.updateRunHistory(instanceName.strip() + ":\nStarting grid MM strategy", "history", "yes")
 
 		#Check if any previous instance of the bot was running and update order history
-		if gridBotStart.checkOldOrders():
+		if os.path.exists("orderDb.pickle"):
 			print("Previous orders exist canceling them now")
 			#Load orders and then cancel them one by one
 			loadOrdersToCancel = gridBotStart.loadOrders()

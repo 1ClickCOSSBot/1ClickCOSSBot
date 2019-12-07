@@ -274,7 +274,8 @@ def quotePairChanged(event, trade = None):
 
 	quotePairBalanceLabel.config(text="    Quote Balance (" + quotePair.get() + ")")
 	orderSizeLabel.config(text="    Order Size (" + quotePair.get() + ")")
-	priceRangeLabel.config(text="    Price Range (" + quotePair.get() + ")")
+	buyRangeLabel.config(text="    Buy Range (" + quotePair.get() + ")")
+	sellRangeLabel.config(text="    Buy Range (" + quotePair.get() + ")")
 	gridDistanceLabel.config(text="    Grid Distance (" + quotePair.get() + ")")
 
 def stratMenuChanged(event):
@@ -538,9 +539,9 @@ gridDistanceBox.insert(tk.END, "0.000001")
 gridDistanceBox.config(bg="white", fg="black")
 gridDistanceBox.grid(row=7, column=2)
 
-priceRangeLabel = tk.Label(gridStratFrame, text="    Price Range (" + quotePair.get() + ")")
-priceRangeLabel.config(relief=FLAT, bg="#182923", fg=FOREGROUND)
-priceRangeLabel.grid(row=8, column=0, sticky="W")
+buyRangeLabel = tk.Label(gridStratFrame, text="    Price Range (" + quotePair.get() + ")")
+buyRangeLabel.config(relief=FLAT, bg="#182923", fg=FOREGROUND)
+buyRangeLabel.grid(row=8, column=0, sticky="W")
 lowerPriceBox = tk.Text(gridStratFrame, width=12, height=1)
 lowerPriceBox.insert(tk.END, "0.000065")
 lowerPriceBox.config(bg="#cc3300", fg="white")
@@ -550,12 +551,16 @@ higherPriceBox.insert(tk.END, "0.000095")
 higherPriceBox.config(bg="#336600", fg="white")
 higherPriceBox.grid(row=8, column=2)
 
+sellRangeLabel = tk.Label(gridStratFrame, text="    Price Range (" + quotePair.get() + ")")
+sellRangeLabel.config(relief=FLAT, bg="#182923", fg=FOREGROUND)
+sellRangeLabel.grid(row=9, column=0, sticky="W")
+
 gridNumberLabel = tk.Label(gridStratFrame, text="\n    Number Of Grids")
 gridNumberLabel.config(relief=FLAT, bg="#182923", fg=FOREGROUND)
-gridNumberLabel.grid(row=9, column=0, sticky="W")
+gridNumberLabel.grid(row=10, column=0, sticky="W")
 numberOfGrids = Scale(gridStratFrame, from_=2, to=200, resolution=2, orient=HORIZONTAL, bg="#182923", fg=FOREGROUND, relief=FLAT, length=210)
 numberOfGrids["highlightthickness"]=0
-numberOfGrids.grid(row=9, column=1, columnspan=2)
+numberOfGrids.grid(row=10, column=1, columnspan=2)
 
 #Define Run page UI elements
 tk.Label(runFrame, text="", bg=BACKGROUND).grid(row=0, column=1)
