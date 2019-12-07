@@ -41,20 +41,22 @@ class gridBotStart:
 		f.write(message)
 		f.close()
 
-	def updateOrderDatabase(message, restart = "no"):
+	def saveOrders(orders):
 		#Check if database file already exists, if file exists ask user if they would like to cancel all previous orders and start over
-		orderFileRead = open('existingOrders.txt', "r")
-		deleteOrders = "yes"
-		if orderFileRead.mode == "r":
-			deleteOrders = tk.messagebox.askquestion("Bot orders exist", "Would you like to delete all previous orders created by this bot instance or continue from the previous position?")
-		orderFileRead.close()
+		print("Adding new order to orderDb.txt")
+		with open('orderDb.pickle', 'wb') as handle:
+			pickle.dump(orders, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-		if deleteOrders == "yes":
-			print("Cancelling all orders from previous instance and starting over")
+	def loadOrders():
+		orders = 0
+		print("Loading orders")
+		with open('orderDb.pickle', 'rb') as handle:
+			orders = pickle.load(handle)
+		return orders
 
 	def checkOldOrders():
 		#Check if an old order file exists
-		if os.path.exists("orderDb.txt"):
+		if os.path.exists("orderDb.pickle"):
 			return True
 		else:
 			return False
@@ -72,8 +74,14 @@ class gridBotStart:
 		gridBotStart.updateRunHistory(instanceName.strip() + ":\nStarting grid MM strategy", "history", "yes")
 
 		#Check if any previous instance of the bot was running and update order history
-		if checkOldOrders():
+		if gridBotStart.checkOldOrders():
 			print("Looks like a previous instance of this bot has some open orders")
+			deleteOrders = tk.messagebox.askquestion("Bot orders exist", "Would you like to cancel all previous orders created by this bot instance or continue from the previous position?")
+			if deleteOrders == "yes":
+				print("Cancelling all orders from previous instance and starting over")
 		else:
 			print("Creating order database")
-	
+			myOrders = {
+				id: 10000
+			}
+			gridBotStart.saveOrders(myOrders)

@@ -1,4 +1,2 @@
 GRIDMM_COS_ETH:
 Starting grid MM strategy
-GRIDMM_COS_ETH:
-Starting grid MM strategy
