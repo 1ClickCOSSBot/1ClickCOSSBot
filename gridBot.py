@@ -12,7 +12,7 @@ class gridBotStart:
 	def __init__(self):
 		#Create pycoss object with API keys
 		with open('gridSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
-			    quotePair, tradePair, publicKey, privateKey, orderSize, gridDistance, lowerPrice, higherPrice, numberOfGrids = pickle.load(f)
+			    quotePair, tradePair, publicKey, privateKey, orderSize, gridDistance, lowerBuyPrice, higherBuyPrice, lowerSellPrice, higherSellPrice, numberOfGrids = pickle.load(f)
 		self.coss_client = PyCOSSClient(api_public=publicKey,
 		                           api_secret=privateKey)
 
@@ -61,7 +61,6 @@ class gridBotStart:
 		#Notify User of bot instance in telegram
 		if telegramEnabled:
 			gridBotStart.sendTelegram(getTelegramToken, getTelegramChatID, instanceName.strip() + ":\nStarting grid MM strategy")
-
 		#Clear any previous history and add new history
 		gridBotStart.updateRunHistory(instanceName.strip() + ":\nStarting grid MM strategy", "history", "yes")
 
@@ -74,4 +73,10 @@ class gridBotStart:
 				print("Deleting order")
 
 		#Load strategy settings
-		
+		with open('gridSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
+			quotePair, tradePair, publicKey, privateKey, orderSize, gridDistance, lowerBuyPrice, higherBuyPrice, lowerSellPrice, higherSellPrice, numberOfGrids = pickle.load(f)
+		if telegramEnabled:
+			gridBotStart.sendTelegram(getTelegramToken, getTelegramChatID, str(int(float(numberOfGrids)/2)) + " orders will be placed on buy side")
+			gridBotStart.sendTelegram(getTelegramToken, getTelegramChatID, str(int(float(numberOfGrids)/2)) + " orders will be placed on sell side")
+		gridBotStart.updateRunHistory(str(int(float(numberOfGrids)/2)) + " orders will be placed on buy side")
+		gridBotStart.updateRunHistory(str(int(float(numberOfGrids)/2)) + " orders will be placed on sell side")

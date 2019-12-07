@@ -14,7 +14,7 @@ class exchangeInfo:
 		if getPublicKey is None and getPrivateKey is None:
 			#Create pycoss object with API keys
 			with open('gridSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
-				quotesPair, tradePair, storedPublicKey, storedPrivateKey, orderSize, gridDistance, lowerPrice, higherPrice, numberOfGrids = pickle.load(f)
+				temp, temp, storedPublicKey, storedPrivateKey, temp, temp, temp, temp, temp, temp, temp = pickle.load(f)
 
 		if myPublicKey is None:
 			self.coss_client = PyCOSSClient(api_public=storedPublicKey, api_secret=storedPrivateKey)
@@ -79,3 +79,14 @@ class exchangeInfo:
 				pairCount = pairCount + 1
 
 			return returnBalances
+
+	def getPairPrice(self, quote, trade):
+		pair = trade + "_" + quote
+		price = self.coss_client.get_market_price(pair)[0]["price"]
+		return price
+
+	def getPairAskBid(self, quote, trade):
+		pair = trade + "_" + quote
+		pairData = self.coss_client.get_order_book(pair)
+		return [pairData['asks'][0][0], pairData['bids'][0][0]]
+
