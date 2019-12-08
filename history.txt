@@ -1,4 +1,8 @@
-GridMM_COS_ETH:
+GridMM_UBC_ETH:
 Starting grid MM strategy
 2 orders will be placed on buy side
 2 orders will be placed on sell side
+Buy order #1 created
+Buy order #2 created
+Sell order #1 created
+Sell order #2 created

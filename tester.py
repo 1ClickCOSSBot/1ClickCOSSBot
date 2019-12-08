@@ -9,6 +9,12 @@ privateKey = "Test2"
 coss_client = PyCOSSClient(api_public=publicKey,
 		                           api_secret=privateKey)
 
+
+orders = 0
+with open('orderDb.pickle', 'rb') as handle:
+	orders = pickle.load(handle)
+print(orders[0])
+
 #tk.messagebox.showinfo("Error creating buy order!", "Some error was encountered when creating a buy order, please ensure you have enough balance and you are above the minimum threshold for the trading pair.")
 exit(0)
 

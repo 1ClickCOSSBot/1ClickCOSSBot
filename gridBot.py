@@ -103,9 +103,9 @@ class gridBotStart:
 				tk.messagebox.showinfo("Error creating buy order!", "Some error was encountered when creating a buy order, please ensure you have enough balance and you are above the minimum threshold for the trading pair.")
 				exit(0)
 			allOrders.append(myOrder)
-			gridBotStart.sendTelegram(getTelegramToken, getTelegramChatID, "Buy order #" + str(buyCount) + " created at " + str(orderBuyStartPrice) + " " + quotePair)
-			gridBotStart.updateRunHistory("Buy order #" + str(buyCount) + " created at " + str(orderBuyStartPrice) + " " + quotePair)
-			orderBuyStartPrice = orderBuyStartPrice - gridDistance
+			gridBotStart.sendTelegram(getTelegramToken, getTelegramChatID, "Buy order " + str(buyCount) + " created at " + str(orderBuyStartPrice) + " " + quotePair)
+			gridBotStart.updateRunHistory("Buy order #" + str(buyCount) + " created")
+			orderBuyStartPrice = float(orderBuyStartPrice) - float(gridDistance)
 			buyCount = buyCount + 1
 			
 
@@ -116,13 +116,13 @@ class gridBotStart:
 		while sellCount <= numberGrids:
 			myOrder = pyCossClient.create_order(orderPair, orderSellSide, orderType, orderSize, orderSellStartPrice)
 			if "error" in myOrder:
-				print("Some error was encountered when trying to create buy order#" + str(sellCount) + " with price " + str(orderSellStartPrice) + " " + quotePair + ". Bot will exit")
-				tk.messagebox.showinfo("Error creating buy order!", "Some error was encountered when creating a buy order, please ensure you have enough balance and you are above the minimum threshold for the trading pair.")
+				print("Some error was encountered when trying to create sell order#" + str(sellCount) + " with price " + str(orderSellStartPrice) + " " + quotePair + ". Bot will exit")
+				tk.messagebox.showinfo("Error creating sell order!", "Some error was encountered when creating a sell order, please ensure you have enough balance and you are above the minimum threshold for the trading pair.")
 				exit(0)
 			allOrders.append(myOrder)
-			gridBotStart.sendTelegram(getTelegramToken, getTelegramChatID, "Buy order #" + str(sellCount) + " created at " + str(orderSellStartPrice) + " " + quotePair)
-			gridBotStart.updateRunHistory("Buy order #" + str(sellCount) + " created at " + str(orderSellStartPrice) + " " + quotePair)
-			orderSellStartPrice = orderSellStartPrice + gridDistance
+			gridBotStart.sendTelegram(getTelegramToken, getTelegramChatID, "Sell order " + str(sellCount) + " created")
+			gridBotStart.updateRunHistory("Sell order #" + str(sellCount) + " created")
+			orderSellStartPrice = float(orderSellStartPrice) + float(gridDistance)
 			sellCount = sellCount + 1
 
 		#Save all the orders
@@ -134,6 +134,8 @@ class gridBotStart:
 			loadAndCheckOrders = gridBotStart.loadOrders()
 			orderCount = 1
 			for orders in loadAndCheckOrders:
-				print("Checking order #" + orderCount)
+				print("Checking order #" + str(orderCount))
 				orderCount = orderCount + 1
+				time.sleep(1)
+			print("\nCheck completed. Waiting 5 seconds and checking again\n")
 			time.sleep(5)
