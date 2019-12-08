@@ -46,6 +46,10 @@ class gridBotStart:
 
 	def gridStart(instanceName):
 
+		#Hide tkinter UI window to show error messages or popup questions
+		root = tk.Tk()
+		root.withdraw()
+
 		#Create pycoss object with API keys and load strategy settings
 		with open('gridSettings.conf', 'rb') as f:
 			    quotePair, tradePair, publicKey, privateKey, orderSize, gridDistance, lowerBuyPrice, higherBuyPrice, lowerSellPrice, higherSellPrice, numberOfGrids = pickle.load(f)
@@ -73,11 +77,15 @@ class gridBotStart:
 		
 		#Store grid count
 		numberGrids = int(float(numberOfGrids)/2)
+		if numberOfGrids <= 2:
+			orderString = "order"
+		else:
+			orderString = "orders"
 		if telegramEnabled:
-			gridBotStart.sendTelegram(getTelegramToken, getTelegramChatID, str(numberGrids) + " orders will be placed on buy side")
-			gridBotStart.sendTelegram(getTelegramToken, getTelegramChatID, str(numberGrids) + " orders will be placed on sell side")
-		gridBotStart.updateRunHistory(str(numberGrids) + " orders will be placed on buy side")
-		gridBotStart.updateRunHistory(str(numberGrids) + " orders will be placed on sell side")
+			gridBotStart.sendTelegram(getTelegramToken, getTelegramChatID, str(numberGrids) + " " + orderString + " will be placed on buy side")
+			gridBotStart.sendTelegram(getTelegramToken, getTelegramChatID, str(numberGrids) + " " + orderString + " will be placed on sell side")
+		gridBotStart.updateRunHistory(str(numberGrids) + " " + orderString + " will be placed on buy side")
+		gridBotStart.updateRunHistory(str(numberGrids) + " " + orderString + " will be placed on sell side")
 		
 
 		orderType = "limit"
@@ -92,6 +100,7 @@ class gridBotStart:
 			myOrder = pyCossClient.create_order(orderPair, orderBuySide, orderType, orderSize, orderBuyStartPrice)
 			if "error" in myOrder:
 				print("Some error was encountered when trying to create buy order#" + str(buyCount) + " with price " + str(orderBuyStartPrice) + " " + quotePair + ". Bot will exit")
+				tk.messagebox.showinfo("Error creating buy order!", "Some error was encountered when creating a buy order, please ensure you have enough balance and you are above the minimum threshold for the trading pair.")
 				exit(0)
 			allOrders.append(myOrder)
 			gridBotStart.sendTelegram(getTelegramToken, getTelegramChatID, "Buy order #" + str(buyCount) + " created at " + str(orderBuyStartPrice) + " " + quotePair)

@@ -1,4 +1,4 @@
 GridMM_COS_ETH:
 Starting grid MM strategy
-1 orders will be placed on buy side
-1 orders will be placed on sell side
+2 orders will be placed on buy side
+2 orders will be placed on sell side
