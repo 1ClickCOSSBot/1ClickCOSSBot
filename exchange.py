@@ -47,11 +47,11 @@ class exchangeInfo:
 		except:
 			print("Failed to connect to exchange with provided API")
 		if 'error' in result:
-			return "Connected but failed to get data, API keys may be invalid"
+			return False
 		elif 'available' in result:
 			return True
 
-		return "Failed to Connect"
+		return False
 
 
 	def getCryptoBalance(self, quote = None, trade = None):

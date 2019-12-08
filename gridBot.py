@@ -80,3 +80,4 @@ class gridBotStart:
 			gridBotStart.sendTelegram(getTelegramToken, getTelegramChatID, str(int(float(numberOfGrids)/2)) + " orders will be placed on sell side")
 		gridBotStart.updateRunHistory(str(int(float(numberOfGrids)/2)) + " orders will be placed on buy side")
 		gridBotStart.updateRunHistory(str(int(float(numberOfGrids)/2)) + " orders will be placed on sell side")
+		

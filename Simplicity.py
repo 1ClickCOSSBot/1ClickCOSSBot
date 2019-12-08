@@ -322,7 +322,7 @@ def saveStrategy():
 		messagebox.showinfo("Saved", "Your strategy settings will be applied")
 		myExchange = testKeys
 	else:
-		messagebox.showinfo("Invalid", "Looks like you entered invalid API keys, please try again")
+		messagebox.showinfo("Invalid", "Looks like you entered invalid API keys. Please try again!")
 		return 0
 
 	#Save all settings to gridSettings.conf
