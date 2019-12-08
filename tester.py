@@ -1,11 +1,16 @@
 import pickle
 from pycoss import PyCOSSClient
+import tkinter as tk
+from tkinter import messagebox
 
 publicKey = "Test"
 privateKey = "Test2"
 
 coss_client = PyCOSSClient(api_public=publicKey,
 		                           api_secret=privateKey)
+
+#tk.messagebox.showinfo("Error creating buy order!", "Some error was encountered when creating a buy order, please ensure you have enough balance and you are above the minimum threshold for the trading pair.")
+exit(0)
 
 #Ensure connection to exchange is established
 	#Save all settings to gridSettings.conf
