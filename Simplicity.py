@@ -86,7 +86,7 @@ def initializeBot():
 	chatIDBox.insert(tk.END, getTelegramChatID.strip())
 
 	if isTelegramEnabled:
-		sendTelegramMessage("An instance Simplicity COSS bot was just launched. If this wasn't you please login to your COSS account and disable your API keys immediately.", False)
+		sendTelegramMessage("An instance of your Simplicity COSS bot was just launched. If this wasn't you please login to your COSS account and disable your API keys immediately.", False)
 
 #Clear all frames
 def clearFrames():
@@ -155,21 +155,26 @@ def openRun():
 	'''
 	Switches frames to the run tab
 	'''	
-	openSettings()
+	#openSettings()
+
+	#Load Strategy Settings
+	with open('gridSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
+		quotePair, tradePair, publicKey, privateKey, orderSize, gridDistance, lowerBuyPrice, higherBuyPrice, lowerSellPrice, higherSellPrice, numberOfGrids = pickle.load(f)
+		
 	clearFrames()
 	runBtn.config(bg=BTNCLICKEDBG, fg=BTNCLICKEDFG)
 
 	#Update information in text fields
 	runStrategyBox.config(state="normal")
 	runStrategyBox.delete('1.0', tk.END)
-	runStrategyBox.insert(tk.END, tradingStrat.get())
+	runStrategyBox.insert(tk.END, "Grid MM")
 	runStrategyBox.config(state="disabled")
 	runTradePairBox.config(state="normal")
 	runTradePairBox.delete('1.0', tk.END)
-	runTradePairBox.insert(tk.END, tradingPair.get() + "_" + quotePair.get())
+	runTradePairBox.insert(tk.END, tradePair + "_" + quotePair)
 	runTradePairBox.config(state="disabled")
 	runInstanceNameBox.delete('1.0', tk.END)
-	runInstanceNameBox.insert(tk.END, tradingStrat.get().replace(" ", "") + "_" + tradingPair.get().replace(" ", "") + "_" + quotePair.get().replace(" ", ""))
+	runInstanceNameBox.insert(tk.END, "Grid MM" + "_" + tradePair + "_" + quotePair)
 
 	runFrame.place(relwidth=FRAMEHEIGHT, relheight=FRAMEWIDTH, relx=FRAMEPADX, rely=FRAMEPADY)
 
@@ -221,6 +226,7 @@ def tradingPairChanged(event, pair):
 	if pair is not None:
 		tradingPair.set(pair)
 	tradePairBalanceLabel.config(text="    Trade Balance (" + tradingPair.get() + ")")
+	orderSizeLabel.config(text="    Order Size (" + tradingPair.get() + ")")
 
 	#Load selected pair balances
 	balances = {
@@ -295,7 +301,6 @@ def quotePairChanged(event, trade = None):
 	tradingPairChanged(None, trade)
 
 	quotePairBalanceLabel.config(text="    Quote Balance (" + quotePair.get() + ")")
-	orderSizeLabel.config(text="    Order Size (" + quotePair.get() + ")")
 	buyRangeLabel.config(text="    Buy Price Range (" + quotePair.get() + ")")
 	sellRangeLabel.config(text="    Sell Price Range (" + quotePair.get() + ")")
 	gridDistanceLabel.config(text="    Grid Distance (" + quotePair.get() + ")")
@@ -318,7 +323,8 @@ def saveStrategy():
 	testPublicKey = publicAPIKeyBox.get().strip()
 	testPrivateKey = privateAPIKeyBox.get().strip()
 	testKeys = exchangeInfo(testPublicKey, testPrivateKey)
-	if testKeys.testKey():
+	testConnection = testKeys.testKey()
+	if testConnection:
 		messagebox.showinfo("Saved", "Your strategy settings will be applied")
 		myExchange = testKeys
 	else:
@@ -555,7 +561,7 @@ quotePairBalanceBox.grid(row=4, column=2)
 
 tk.Label(gridStratFrame, text="Grid Settings", bg="#182923", fg=FOREGROUND, font='Helvetica 8 bold').grid(row=5, column=1)
 
-orderSizeLabel = tk.Label(gridStratFrame, text="    Order Size (" + quotePair.get() + ")")
+orderSizeLabel = tk.Label(gridStratFrame, text="    Order Size (" + tradingPair.get() + ")")
 orderSizeLabel.config(relief=FLAT, bg="#182923", fg=FOREGROUND)
 orderSizeLabel.grid(row=6, column=0, sticky="W")
 orderSizeBox = tk.Text(gridStratFrame, width=12, height=1)

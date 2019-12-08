@@ -22,7 +22,6 @@ class gridBotStart:
 		return response.json()
 
 	def updateRunHistory(message, fileName = "history", firstMessage = "no"):
-		print(message)
 		print
 		deleteFile = "no"
 		if os.path.exists(fileName + ".txt") and firstMessage != "no":
@@ -37,7 +36,7 @@ class gridBotStart:
 		else:
 			f = open(fileName + ".txt", "w+")
 		if firstMessage == "no":
-			message = "\n" + message
+			message = message
 		f.write(message)
 		f.close()
 
@@ -75,9 +74,26 @@ class gridBotStart:
 		#Load strategy settings
 		with open('gridSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
 			quotePair, tradePair, publicKey, privateKey, orderSize, gridDistance, lowerBuyPrice, higherBuyPrice, lowerSellPrice, higherSellPrice, numberOfGrids = pickle.load(f)
-		if telegramEnabled:
-			gridBotStart.sendTelegram(getTelegramToken, getTelegramChatID, str(int(float(numberOfGrids)/2)) + " orders will be placed on buy side")
-			gridBotStart.sendTelegram(getTelegramToken, getTelegramChatID, str(int(float(numberOfGrids)/2)) + " orders will be placed on sell side")
-		gridBotStart.updateRunHistory(str(int(float(numberOfGrids)/2)) + " orders will be placed on buy side")
-		gridBotStart.updateRunHistory(str(int(float(numberOfGrids)/2)) + " orders will be placed on sell side")
 		
+		#Store grid count
+		numberGrids = int(float(numberOfGrids)/2)
+		if telegramEnabled:
+			gridBotStart.sendTelegram(getTelegramToken, getTelegramChatID, str(numberGrids) + " orders will be placed on buy side")
+			gridBotStart.sendTelegram(getTelegramToken, getTelegramChatID, str(numberGrids) + " orders will be placed on sell side")
+		gridBotStart.updateRunHistory(str(numberGrids) + " orders will be placed on buy side")
+		gridBotStart.updateRunHistory(str(numberGrids) + " orders will be placed on sell side")
+		
+		#Create buy orders
+		buyCount = 0
+		orderPair = tradePair + "_" + quotePair
+		orderBuyStartPrice = higherBuyPrice
+		orderBuySide = "BUY"
+		orderType = "limit"
+		#create_order('ETH_BTC', 'SELL', 'limit', 0.025, 0.035)
+		while buyCount < numberGrids:
+			myOrder = self.coss_client.create_order(orderPair, orderBuySide, orderType, orderSize, orderBuyStartPrice)
+			
+
+		#Create sell orders
+
+		#Check all orders and update as necessary

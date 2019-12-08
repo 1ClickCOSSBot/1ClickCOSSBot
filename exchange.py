@@ -48,7 +48,7 @@ class exchangeInfo:
 			print("Failed to connect to exchange with provided API")
 		if 'error' in result:
 			return False
-		elif 'available' in result:
+		elif 'available' in result[0]:
 			return True
 
 		return False
