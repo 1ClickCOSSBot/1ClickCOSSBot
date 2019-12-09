@@ -1,6 +1,7 @@
 import pickle
 from pycoss import PyCOSSClient
 import tkinter as tk
+import time
 from tkinter import messagebox
 
 publicKey = "Test"
@@ -10,11 +11,28 @@ coss_client = PyCOSSClient(api_public=publicKey,
 		                           api_secret=privateKey)
 
 
+d = 0.0000001
+strD = str(d)
+myLength = len(strD)
+print(strD)
+print(myLength)
+
+'''
 orders = 0
 with open('orderDb.pickle', 'rb') as handle:
 	orders = pickle.load(handle)
-print(orders[0])
 
+count = 0
+for myOrder in orders:
+	print(myOrder)
+	if myOrder['order_side'] == 'SELL':
+		myOrder = {'empty': 'this order is empty'}
+		orders[count] = myOrder
+	time.sleep(1)
+	count = count + 1
+
+print(orders)
+'''
 #tk.messagebox.showinfo("Error creating buy order!", "Some error was encountered when creating a buy order, please ensure you have enough balance and you are above the minimum threshold for the trading pair.")
 exit(0)
 
