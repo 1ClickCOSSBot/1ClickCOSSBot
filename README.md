@@ -1,4 +1,5 @@
 #Description
+
 This is a simple bot designed with a UI to enable easy botting on COSS exchange
 
 #Install Python and Dependencies
