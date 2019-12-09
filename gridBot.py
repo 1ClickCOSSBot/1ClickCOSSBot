@@ -136,6 +136,17 @@ class gridBotStart:
 			for orders in loadAndCheckOrders:
 				print("Checking order #" + str(orderCount))
 				orderCount = orderCount + 1
+				currentStatus = pyCossClient.get_order_details(orders['order_id'])
+				if str(currentStatus['status']) == "OPEN":
+					print("Order " + orderCount + " is still open")
+				elif str(currentStatus['status']) == "FILLED":
+					print("Order " + orderCount + " completed. Creating new order on opposite side.")
+					if str(currentStatus['order_side']) == "SELL":
+						orderSide = "BUY"
+					else:
+						orderSide = "SELL"
+					price = float(currentStatus['order_price']) + float(gridDistance)
+					newOrder = pyCossClient.create_order(orderPair, orderSide, orderType, orderSize, price)
 				time.sleep(1)
 			print("\nCheck completed. Waiting 5 seconds and checking again\n")
-			time.sleep(5)
+			time.sleep(1)
