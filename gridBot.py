@@ -167,14 +167,14 @@ class gridBotStart:
 							price = float(latestAskBid[1]) + float(gridDistance)
 						else:
 							price = sellPrice
-					if orderSide == "SELL" and price >= float(lowerSellPrice) and price <= float(higherSellPrice):
+					if orderSide == "SELL" and price >= float(lowerBuyPrice) and price <= float(higherSellPrice):
 						newOrder = pyCossClient.create_order(orderPair, orderSide, orderType, orderSize, price)
 						loadAndCheckOrders[count] = newOrder
 						gridBotStart.sendTelegram("Buy order " + str(orderCount) + " completed. Creating sell order on opposite grid")
 						gridBotStart.updateRunHistory("Buy order " + str(orderCount) + " completed. Creating sell order on opposite grid")
 						gridBotStart.sendTelegram("Sell order " + str(orderCount) + " created at " + str(price) + " " + quotePair)
 						gridBotStart.updateRunHistory("Sell order " + str(orderCount) + " created at " + str(price) + " " + quotePair)
-					elif orderSide == "BUY" and price >= float(lowerBuyPrice) and price <= float(higherBuyPrice):
+					elif orderSide == "BUY" and price >= float(lowerBuyPrice) and price <= float(higherSellPrice):
 						newOrder = pyCossClient.create_order(orderPair, orderSide, orderType, orderSize, price)
 						loadAndCheckOrders[count] = newOrder
 						gridBotStart.sendTelegram("Sell order " + str(orderCount) + " completed. Creating buy order on opposite grid")
