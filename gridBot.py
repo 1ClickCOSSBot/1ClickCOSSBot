@@ -74,13 +74,14 @@ class gridBotStart:
 
 		#Check if any previous instance of the bot was running and update order history
 		if os.path.exists("orderDb.pickle"):
-			os.remove("orderDb.pickle")
 			print("Previous orders exist canceling them now")
-			#Load orders and then cancel them one by one
-			#loadOrdersToCancel = gridBotStart.loadOrders()
-			#for orders in loadOrdersToCancel:
-			#	print("Deleting order and exiting: Temp TEST")
-			#	exit(0)
+			myOrders = gridBotStart.loadOrders()
+			for order in myOrders:
+				try:
+					pyCossClient.cancel_order(order['order_id'], order['order_symbol'])
+				except:
+					print("Something went wrong cancelling one of the orders")
+			os.remove("orderDb.pickle")
 		
 		#Store grid count
 		numberGrids = int(float(numberOfGrids)/2)
@@ -126,7 +127,7 @@ class gridBotStart:
 				tk.messagebox.showinfo("Error creating sell order!", "Some error was encountered when creating a sell order, please ensure you have enough balance and you are above the minimum threshold for the trading pair.")
 				exit(0)
 			allOrders.append(myOrder)
-			gridBotStart.sendTelegram("Sell order " + str(buyCount) + " created at " + str(orderSellStartPrice) + " " + quotePair)
+			gridBotStart.sendTelegram("Sell order " + str(sellCount) + " created at " + str(orderSellStartPrice) + " " + quotePair)
 			gridBotStart.updateRunHistory("Sell order #" + str(sellCount) + " created at " + str(orderSellStartPrice) + " " + quotePair)
 			orderSellStartPrice = float(orderSellStartPrice) + float(gridDistance)
 			sellCount = sellCount + 1
@@ -183,6 +184,8 @@ class gridBotStart:
 						gridBotStart.updateRunHistory("Buy order " + str(orderCount) + " created at " + str(price) + " " + quotePair)
 					else:
 						print("Price doesn't fall within your specified price range")
+				else:
+					print("Order " + str(orderCount) + " is partially filled or cancelled")
 				orderCount = orderCount + 1
 				count = count + 1
 				time.sleep(2)
