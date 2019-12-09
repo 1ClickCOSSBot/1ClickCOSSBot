@@ -65,16 +65,11 @@ BTNCLICKEDFG = "white"
 BTNFRAMEBG = CANVASBG
 
 def initializeBot():
-	#Check if this is a first time run
-	with open('firstRun.txt', 'rb') as f:
-		isFirstRun = pickle.load(f)
-
-	if isFirstRun == 0:
-		messagebox.showinfo("Hello World", "Welcome to Simplicity Cos Bot")
-		with open('firstRun.txt', 'wb') as f:
-			pickle.dump(1, f)
-
 	#Load telegram settings
+	if not os.path.exists("telegramSettings.conf"):
+		with open('telegramSettings.conf', 'wb') as f:
+			pickle.dump([False, "", ""], f)
+
 	with open('telegramSettings.conf', 'rb') as f:
 		isTelegramEnabled, getTelegramToken, getTelegramChatID = pickle.load(f)
 	if isTelegramEnabled:
@@ -213,10 +208,11 @@ def openOptions():
 
 def historyReresh():
 	while True:
-		with open("history.txt", "rb") as f2:
-			f2.seek(0)
-			historyTextField.delete("1.0", tk.END)
-			historyTextField.insert(tk.END, f2.read())
+		if os.path.exists("history.txt"):
+			with open("history.txt", "rb") as f2:
+				f2.seek(0)
+				historyTextField.delete("1.0", tk.END)
+				historyTextField.insert(tk.END, f2.read())
 		time.sleep(1)
 
 def tradingPairChanged(event, pair):

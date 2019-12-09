@@ -158,11 +158,15 @@ class gridBotStart:
 						buyPrice = float(currentStatus['order_price']) - float(gridDistance)
 						if buyPrice >= float(latestAskBid[0]):
 							price = float(latestAskBid[0]) - float(gridDistance)
+						else:
+							price = buyPrice
 					else:
 						orderSide = "SELL"
 						sellPrice = float(currentStatus['order_price']) + float(gridDistance)
 						if sellPrice <= float(latestAskBid[1]):
 							price = float(latestAskBid[1]) + float(gridDistance)
+						else:
+							price = sellPrice
 					if orderSide == "SELL" and price >= float(lowerSellPrice) and price <= float(higherSellPrice):
 						newOrder = pyCossClient.create_order(orderPair, orderSide, orderType, orderSize, price)
 						loadAndCheckOrders[count] = newOrder

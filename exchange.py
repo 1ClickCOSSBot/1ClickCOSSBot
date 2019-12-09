@@ -1,4 +1,5 @@
 from pycoss import PyCOSSClient
+import os.path
 import datetime
 import time
 import pickle
@@ -13,9 +14,12 @@ class exchangeInfo:
 
 		if getPublicKey is None and getPrivateKey is None:
 			#Create pycoss object with API keys
+			if not os.path.exists("gridSettings.conf"):
+				with open('gridSettings.conf', 'wb') as f:
+					pickle.dump(["ETH", "COS", "", "", 0, 0, 0, 0, 0, 0, 0], f)
 			with open('gridSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
 				temp, temp, storedPublicKey, storedPrivateKey, temp, temp, temp, temp, temp, temp, temp = pickle.load(f)
-
+				
 		if myPublicKey is None:
 			self.coss_client = PyCOSSClient(api_public=storedPublicKey, api_secret=storedPrivateKey)
 		else:
