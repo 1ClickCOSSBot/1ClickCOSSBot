@@ -101,34 +101,34 @@ class gridBotStart:
 
 		#Create buy orders for specified grids
 		buyCount = 1
-		orderBuyStartPrice = higherBuyPrice
+		orderBuyStartPrice = float(higherBuyPrice)
 		orderBuySide = "BUY"
 		while buyCount <= numberGrids:
 			myOrder = pyCossClient.create_order(orderPair, orderBuySide, orderType, orderSize, orderBuyStartPrice)
 			if "error" in myOrder:
-				print("Some error was encountered when trying to create buy order#" + str(buyCount) + " with price " + str(orderBuyStartPrice) + " " + quotePair + ". Bot will exit")
+				print("Some error was encountered when trying to create buy order#" + str(buyCount) + " with price " + str(float(orderBuyStartPrice)/1.0000) + " " + quotePair + ". Bot will exit")
 				tk.messagebox.showinfo("Error creating buy order!", "Some error was encountered when creating a buy order, please ensure you have enough balance and you are above the minimum threshold for the trading pair.")
 				exit(0)
 			allOrders.append(myOrder)
-			gridBotStart.sendTelegram("Buy order " + str(buyCount) + " created at " + str(orderBuyStartPrice) + " " + quotePair)
-			gridBotStart.updateRunHistory("Buy order #" + str(buyCount) + " created at " + str(orderBuyStartPrice) + " " + quotePair)
+			gridBotStart.sendTelegram("Buy order " + str(buyCount) + " created at " + str(float(orderBuyStartPrice)/1.0000) + " " + quotePair)
+			gridBotStart.updateRunHistory("Buy order #" + str(buyCount) + " created at " + str(float(orderBuyStartPrice)/1.0000) + " " + quotePair)
 			orderBuyStartPrice = float(orderBuyStartPrice) - float(gridDistance)
 			buyCount = buyCount + 1
 			
 
 		#Create sell orders for specified grids
 		sellCount = 1
-		orderSellStartPrice = lowerSellPrice
+		orderSellStartPrice = float(lowerSellPrice)
 		orderSellSide = "SELL"
 		while sellCount <= numberGrids:
 			myOrder = pyCossClient.create_order(orderPair, orderSellSide, orderType, orderSize, orderSellStartPrice)
 			if "error" in myOrder:
-				print("Some error was encountered when trying to create sell order#" + str(sellCount) + " with price " + str(orderSellStartPrice) + " " + quotePair + ". Bot will exit")
+				print("Some error was encountered when trying to create sell order#" + str(sellCount) + " with price " + str(float(orderSellStartPrice)/1.0000) + " " + quotePair + ". Bot will exit")
 				tk.messagebox.showinfo("Error creating sell order!", "Some error was encountered when creating a sell order, please ensure you have enough balance and you are above the minimum threshold for the trading pair.")
 				exit(0)
 			allOrders.append(myOrder)
-			gridBotStart.sendTelegram("Sell order " + str(sellCount) + " created at " + str(orderSellStartPrice) + " " + quotePair)
-			gridBotStart.updateRunHistory("Sell order #" + str(sellCount) + " created at " + str(orderSellStartPrice) + " " + quotePair)
+			gridBotStart.sendTelegram("Sell order " + str(sellCount) + " created at " + str(float(orderSellStartPrice)/1.0000) + " " + quotePair)
+			gridBotStart.updateRunHistory("Sell order #" + str(sellCount) + " created at " + str(float(orderSellStartPrice)/1.0000) + " " + quotePair)
 			orderSellStartPrice = float(orderSellStartPrice) + float(gridDistance)
 			sellCount = sellCount + 1
 
@@ -145,7 +145,7 @@ class gridBotStart:
 			orderCount = 1
 			count = 0
 			for orders in loadAndCheckOrders:
-				print("Checking order #" + str(orderCount))
+				print("Checking grid order #" + str(orderCount))
 				currentStatus = pyCossClient.get_order_details(orders['order_id'])
 				if str(currentStatus['status']) == "open":
 					print("Order " + str(orderCount) + " is still open")
@@ -171,24 +171,24 @@ class gridBotStart:
 					if orderSide == "SELL" and price >= float(lowerBuyPrice) and price <= float(higherSellPrice):
 						newOrder = pyCossClient.create_order(orderPair, orderSide, orderType, orderSize, price)
 						loadAndCheckOrders[count] = newOrder
-						gridBotStart.sendTelegram("Buy order " + str(orderCount) + " completed. Creating sell order on opposite grid")
-						gridBotStart.updateRunHistory("Buy order " + str(orderCount) + " completed. Creating sell order on opposite grid")
-						gridBotStart.sendTelegram("Sell order " + str(orderCount) + " created at " + str(price) + " " + quotePair)
-						gridBotStart.updateRunHistory("Sell order " + str(orderCount) + " created at " + str(price) + " " + quotePair)
+						gridBotStart.sendTelegram("Grid order " + str(orderCount) + " (Buy @ " + str(float(currentStatus['order_price'])/1.0000000000000000) + ") completed.")
+						gridBotStart.updateRunHistory("Grid order " + str(orderCount) + " (Buy @ " + str(float(currentStatus['order_price'])/1.0000000000000000) + ") completed.")
+						gridBotStart.sendTelegram("Grid order " + str(orderCount) + " created. Sell at " + str(float(price)/1.0000000000000000) + " " + quotePair)
+						gridBotStart.updateRunHistory("Grid order " + str(orderCount) + " created. Sell at " + str(float(price)/1.0000000000000000) + " " + quotePair)
 					elif orderSide == "BUY" and price >= float(lowerBuyPrice) and price <= float(higherSellPrice):
 						newOrder = pyCossClient.create_order(orderPair, orderSide, orderType, orderSize, price)
 						loadAndCheckOrders[count] = newOrder
-						gridBotStart.sendTelegram("Sell order " + str(orderCount) + " completed. Creating buy order on opposite grid")
-						gridBotStart.updateRunHistory("Sell order " + str(orderCount) + " completed. Creating buy order on opposite grid")
-						gridBotStart.sendTelegram("Buy order " + str(orderCount) + " created at " + str(price) + " " + quotePair)
-						gridBotStart.updateRunHistory("Buy order " + str(orderCount) + " created at " + str(price) + " " + quotePair)
+						gridBotStart.sendTelegram("Grid order " + str(orderCount) + " (Sell @ " + str(float(currentStatus['order_price'])/1.0000000000000000) + ") completed.")
+						gridBotStart.updateRunHistory("Grid order " + str(orderCount) + " (Sell @ " + str(float(currentStatus['order_price'])/1.0000000000000000) + ") completed.")
+						gridBotStart.sendTelegram("Grid order " + str(orderCount) + " created. Buy at " + str(float(price)/1.0000000000000000) + " " + quotePair)
+						gridBotStart.updateRunHistory("Grid order " + str(orderCount) + " created. Buy at " + str(float(price)/1.0000000000000000) + " " + quotePair)
 					else:
 						print("Price doesn't fall within your specified price range")
 				else:
 					print("Order " + str(orderCount) + " is partially filled or cancelled")
 				orderCount = orderCount + 1
 				count = count + 1
-				time.sleep(2)
+				time.sleep(0.2)
 			gridBotStart.saveOrders(loadAndCheckOrders)
-			print("\nCheck completed. Waiting 5 seconds and checking again\n")
-			time.sleep(3)
+			print("\nCheck completed. Waiting 4 seconds and checking again\n")
+			time.sleep(4)

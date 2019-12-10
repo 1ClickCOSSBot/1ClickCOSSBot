@@ -208,7 +208,8 @@ def historyReresh():
 				f2.seek(0)
 				historyTextField.delete("1.0", tk.END)
 				historyTextField.insert(tk.END, f2.read())
-		time.sleep(1)
+				historyTextField.see("end")
+		time.sleep(2)
 
 def tradingPairChanged(event, pair):
 	'''
