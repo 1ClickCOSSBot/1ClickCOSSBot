@@ -191,11 +191,6 @@ def openHistory():
 	historyBtn.config(bg=BTNCLICKEDBG, fg=BTNCLICKEDFG)
 	historyFrame.place(relwidth=FRAMEHEIGHT, relheight=FRAMEWIDTH, relx=FRAMEPADX, rely=FRAMEPADY)
 
-	with open("history.txt", "rb") as f:
-		f.seek(0)
-		historyTextField.delete("1.0", tk.END)
-		historyTextField.insert(tk.END, f.read())
-
 #Create function for botOptions button
 def openOptions():
 	'''
@@ -326,6 +321,8 @@ def saveStrategy():
 	else:
 		messagebox.showinfo("Invalid", "Looks like you entered invalid API keys. Please try again!")
 		return 0
+
+	#Ensure users ordersize is higher than minimum threshold
 
 	#Save all settings to gridSettings.conf
 	with open('gridSettings.conf', 'wb') as f:
