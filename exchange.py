@@ -45,6 +45,18 @@ class exchangeInfo:
 
 		return pairList
 
+	def getPairDecimal(self, pair):
+		pairInfo = []
+		myExchangeInfo = self.coss_client.get_exchange_info()
+		exchangeSymbols = myExchangeInfo["symbols"]
+		symbolCount = 0
+		for allSymbols in exchangeSymbols:
+			actualQuotePair = exchangeSymbols[symbolCount]["symbol"]
+			if actualQuotePair == pair:
+				return exchangeSymbols[symbolCount]['price_limit_decimal']
+			symbolCount = symbolCount + 1
+		return False
+
 	def testKey(self):
 		try:
 			result = self.coss_client.get_balances()
