@@ -145,6 +145,7 @@ class gridBotStart:
 				tk.messagebox.showinfo("Error creating buy order!", "Some error was encountered when creating a buy order, please ensure you have enough balance and you are above the minimum threshold for the trading pair.\n\nError Description from Exchange:\n" + myOrder['error_description'] + "\nYour total: Size("+ gridBotStart.floatToStr(orderSize) +") * Price("+ gridBotStart.floatToStr(round(orderBuyStartPrice,decimalLimit)) +") = " + gridBotStart.floatToStr((float(orderSize)*float(orderBuyStartPrice))) + "\nCancelling orders and stopping, please check your strategy!")
 				gridBotStart.cancelOrders(pyCossClient, allOrders)
 				exit(0)
+			myOrder['grid_status'] = 'open'
 			allOrders.append(myOrder)
 			gridBotStart.sendTelegram("Buy order " + str(buyCount) + " created at " + gridBotStart.floatToStr(round(orderBuyStartPrice, decimalLimit)) + " " + quotePair)
 			gridBotStart.updateRunHistory("Buy order #" + str(buyCount) + " created at " + gridBotStart.floatToStr(round(orderBuyStartPrice, decimalLimit)) + " " + quotePair)
@@ -170,6 +171,7 @@ class gridBotStart:
 				tk.messagebox.showinfo("Error creating sell order!", "Some error was encountered when creating a sell order, please ensure you have enough balance and you are above the minimum threshold for the trading pair.\n\nError Description from Exchange:\n" + myOrder['error_description'] + "\nYour total: Size("+ gridBotStart.floatToStr(orderSize) +") * Price("+ gridBotStart.floatToStr(round(orderBuySellPrice, decimalLimit)) +") = " + gridBotStart.floatToStr((float(orderSize)*float(orderBuySellPrice))) + "\nCancelling orders and stopping, please check your strategy!")
 				gridBotStart.cancelOrders(pyCossClient, allOrders)
 				exit(0)
+			myOrder['grid_status'] = 'open'
 			allOrders.append(myOrder)
 			gridBotStart.sendTelegram("Sell order " + str(sellCount) + " created at " + gridBotStart.floatToStr(round(orderSellStartPrice, decimalLimit)) + " " + quotePair)
 			gridBotStart.updateRunHistory("Sell order #" + str(sellCount) + " created at " + gridBotStart.floatToStr(round(orderSellStartPrice, decimalLimit)) + " " + quotePair)
@@ -179,12 +181,14 @@ class gridBotStart:
 		#Save all the orders
 		gridBotStart.saveOrders(allOrders)
 
-		#Check all orders and update as necessary in permanent while loop every 5 seconds
+		#Check all orders and update as necessary in permanent while loop every 4 seconds
+		totalProfit = 0
 		while True:
 			#Load orders and check status of each order. If order is completed create a new order on opposite side of grid. Make sure orders are within price range
 			loadAndCheckOrders = gridBotStart.loadOrders()
 			orderCount = 1
 			count = 0
+
 			for orders in loadAndCheckOrders:
 				print("Checking grid order #" + str(orderCount))
 				currentStatus = None
@@ -232,12 +236,20 @@ class gridBotStart:
 							orderCount = orderCount + 1
 							count = count + 1
 							continue
-
-						loadAndCheckOrders[count] = newOrder
 						gridBotStart.sendTelegram("Grid order " + str(orderCount) + " (Buy @ " + gridBotStart.floatToStr(round(float(currentStatus['order_price']), decimalLimit)) + ") completed.")
 						gridBotStart.updateRunHistory("Grid order " + str(orderCount) + " (Buy @ " + gridBotStart.floatToStr(round(float(currentStatus['order_price']), decimalLimit)) + ") completed.")
 						gridBotStart.sendTelegram("Grid order " + str(orderCount) + " created. Sell at " + gridBotStart.floatToStr(round(float(price), decimalLimit)) + " " + quotePair)
 						gridBotStart.updateRunHistory("Grid order " + str(orderCount) + " created. Sell at " + gridBotStart.floatToStr(round(float(price), decimalLimit)) + " " + quotePair)
+						#Check if order was a grid completion and print profit
+						if order['grid_status'] == 'open':
+							newOrder['grid_status'] = 'close'
+						else:
+							newOrder['grid_status'] = 'open'
+							totalProfit = totalProfit + (float(orderSize)*float(gridDistance))
+							gridBotStart.sendTelegram(instanceName + " Total profit: " + gridBotStart.floatToStr(totalProfit) + " " + quotePair)
+							gridBotStart.updateRunHistory(instanceName + " Total profit: " + gridBotStart.floatToStr(totalProfit) + " " + quotePair)
+						#Save new order
+						loadAndCheckOrders[count] = newOrder
 					elif orderSide == "BUY" and price >= float(lowerBuyPrice) and price <= float(higherSellPrice):
 						newOrder = None
 						try:
@@ -247,11 +259,19 @@ class gridBotStart:
 							orderCount = orderCount + 1
 							count = count + 1
 							continue
-						loadAndCheckOrders[count] = newOrder
 						gridBotStart.sendTelegram("Grid order " + str(orderCount) + " (Sell @ " + gridBotStart.floatToStr(round(float(currentStatus['order_price']), decimalLimit)) + ") completed.")
 						gridBotStart.updateRunHistory("Grid order " + str(orderCount) + " (Sell @ " + gridBotStart.floatToStr(round(float(currentStatus['order_price']), decimalLimit)) + ") completed.")
 						gridBotStart.sendTelegram("Grid order " + str(orderCount) + " created. Buy at " + gridBotStart.floatToStr(round(float(price), decimalLimit)) + " " + quotePair)
 						gridBotStart.updateRunHistory("Grid order " + str(orderCount) + " created. Buy at " + gridBotStart.floatToStr(round(float(price), decimalLimit)) + " " + quotePair)
+						#Check if order was a grid completion and print profit
+						if order['grid_status'] == 'open':
+							newOrder['grid_status'] = 'close'
+						else:
+							newOrder['grid_status'] = 'open'
+							totalProfit = totalProfit + (float(orderSize)*float(gridDistance))
+							gridBotStart.sendTelegram(instanceName + " Total profit: " + gridBotStart.floatToStr(totalProfit) + " " + quotePair)
+							gridBotStart.updateRunHistory(instanceName + " Total profit: " + gridBotStart.floatToStr(totalProfit) + " " + quotePair)
+						loadAndCheckOrders[count] = newOrder
 					else:
 						print("Price doesn't fall within your specified price range")
 				else:
