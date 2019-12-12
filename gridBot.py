@@ -241,7 +241,7 @@ class gridBotStart:
 						gridBotStart.sendTelegram("Grid order " + str(orderCount) + " created. Sell at " + gridBotStart.floatToStr(round(float(price), decimalLimit)) + " " + quotePair)
 						gridBotStart.updateRunHistory("Grid order " + str(orderCount) + " created. Sell at " + gridBotStart.floatToStr(round(float(price), decimalLimit)) + " " + quotePair)
 						#Check if order was a grid completion and print profit
-						if order['grid_status'] == 'open':
+						if orders['grid_status'] == 'open':
 							newOrder['grid_status'] = 'close'
 						else:
 							newOrder['grid_status'] = 'open'
@@ -264,7 +264,7 @@ class gridBotStart:
 						gridBotStart.sendTelegram("Grid order " + str(orderCount) + " created. Buy at " + gridBotStart.floatToStr(round(float(price), decimalLimit)) + " " + quotePair)
 						gridBotStart.updateRunHistory("Grid order " + str(orderCount) + " created. Buy at " + gridBotStart.floatToStr(round(float(price), decimalLimit)) + " " + quotePair)
 						#Check if order was a grid completion and print profit
-						if order['grid_status'] == 'open':
+						if orders['grid_status'] == 'open':
 							newOrder['grid_status'] = 'close'
 						else:
 							newOrder['grid_status'] = 'open'
