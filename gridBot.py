@@ -199,6 +199,12 @@ class gridBotStart:
 					orderCount = orderCount + 1
 					count = count + 1
 					continue
+				if 'status' in currentStatus:
+					pass
+				else:
+					print("Could not load status from exchange will keep trying!")
+					continue
+
 				if str(currentStatus['status']) == "open":
 					print("Order " + str(orderCount) + " is still open")
 				elif str(currentStatus['status']) == "filled":
