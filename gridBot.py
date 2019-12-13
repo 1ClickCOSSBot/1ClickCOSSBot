@@ -112,7 +112,7 @@ class gridBotStart:
 				skipSetup = True
 				with open('totalProfit.pickle', 'rb') as f:
 					resumeProfit = pickle.load(f)
-				totalProfit = float(resumeProfit)
+				totalProfit = float(resumeProfit[0])
 			else:
 				skipSetup = False
 				print("Deleting and attempting to cancel previous orders!")
