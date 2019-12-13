@@ -96,30 +96,31 @@ class gridBotStart:
 		with open('telegramSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
 			telegramEnabled, getTelegramToken, getTelegramChatID = pickle.load(f)
 
-		#Notify User of bot instance in telegram
-		gridBotStart.sendTelegram(instanceName.strip() + ":\nStarting grid MM strategy")
-		#Clear any previous history and add new history
-		gridBotStart.updateRunHistory(instanceName.strip() + ":\nStarting grid MM strategy", "history", "yes")
+		#Keep track of total profit
+		totalProfit = 0
+		if not os.path.exists("totalProfit.pickle"):
+			with open('totalProfit.pickle', 'wb') as f:
+				pickle.dump([totalProfit], f)
 
 		#Check if any previous instance of the bot was running and update order history
+		skipSetup = False
 		if os.path.exists("orderDb.pickle"):
-			print("Previous orders exist canceling them now")
-			myOrders = gridBotStart.loadOrders()
-			gridBotStart.cancelOrders(pyCossClient, myOrders)
-			os.remove("orderDb.pickle")
+			print("Previous orders exist")
+			resumeBot = tk.messagebox.askquestion("Resume Previous Instance", "A previous instance of this bot was found, would you like to continue from there?")
+			if resumeBot == 'yes':
+				print("Continuing from previous orders")
+				skipSetup = True
+				with open('totalProfit.pickle', 'rb') as f:
+					resumeProfit = pickle.load(f)
+				totalProfit = float(resumeProfit)
+			else:
+				skipSetup = False
+				print("Deleting and attempting to cancel previous orders!")
+				myOrders = gridBotStart.loadOrders()
+				gridBotStart.cancelOrders(pyCossClient, myOrders)
+				os.remove("orderDb.pickle")
 		
-		#Store grid count
-		numberGrids = int(float(numberOfGrids)/2)
-		if numberOfGrids <= 2:
-			orderString = "order"
-		else:
-			orderString = "orders"
-		gridBotStart.sendTelegram(str(numberGrids) + " " + orderString + " will be placed on buy side")
-		gridBotStart.sendTelegram(str(numberGrids) + " " + orderString + " will be placed on sell side")
-		gridBotStart.updateRunHistory(str(numberGrids) + " " + orderString + " will be placed on buy side")
-		gridBotStart.updateRunHistory(str(numberGrids) + " " + orderString + " will be placed on sell side")
-		
-
+		#Setup order type settings
 		orderType = "limit"
 		orderPair = tradePair + "_" + quotePair
 		allOrders = []
@@ -127,62 +128,83 @@ class gridBotStart:
 		#Get allowed decimal places for price 
 		decimalLimit = myExchange.getPairDecimal(orderPair)
 
-		#Create buy orders for specified grids
-		buyCount = 1
-		orderBuyStartPrice = round(float(higherBuyPrice), decimalLimit)
-		orderBuySide = "BUY"
-		while buyCount <= numberGrids:
-			myOrder = {'error':'temp'}
-			try:
-				myOrder = pyCossClient.create_order(orderPair, orderBuySide, orderType, orderSize, round(orderBuyStartPrice, decimalLimit))
-			except:
-				print("Failed to access exchange when attempting to create order!")
-				tk.messagebox.showinfo("Failed to connect to exchange when creating order!")
-				gridBotStart.cancelOrders(pyCossClient, allOrders)
-				exit(0)
-			if "error" in myOrder:
-				print("Some error was encountered when trying to create buy order#" + str(buyCount) + " with price " + gridBotStart.floatToStr(round(orderBuyStartPrice, decimalLimit)) + " " + quotePair + ".\n\nError Description from Exchange:\n" + myOrder['error_description'] + "\nYour total: Size("+ gridBotStart.floatToStr(orderSize) +") * Price("+ gridBotStart.floatToStr(round(orderBuyStartPrice,decimalLimit)) +") = " + gridBotStart.floatToStr((float(orderSize)*float(orderBuyStartPrice))) + "\nCancelling orders and stopping, please check your strategy!")
-				tk.messagebox.showinfo("Error creating buy order!", "Some error was encountered when creating a buy order, please ensure you have enough balance and you are above the minimum threshold for the trading pair.\n\nError Description from Exchange:\n" + myOrder['error_description'] + "\nYour total: Size("+ gridBotStart.floatToStr(orderSize) +") * Price("+ gridBotStart.floatToStr(round(orderBuyStartPrice,decimalLimit)) +") = " + gridBotStart.floatToStr((float(orderSize)*float(orderBuyStartPrice))) + "\nCancelling orders and stopping, please check your strategy!")
-				gridBotStart.cancelOrders(pyCossClient, allOrders)
-				exit(0)
-			myOrder['grid_status'] = 'open'
-			allOrders.append(myOrder)
-			gridBotStart.sendTelegram("Buy order " + str(buyCount) + " created at " + gridBotStart.floatToStr(round(orderBuyStartPrice, decimalLimit)) + " " + quotePair)
-			gridBotStart.updateRunHistory("Buy order #" + str(buyCount) + " created at " + gridBotStart.floatToStr(round(orderBuyStartPrice, decimalLimit)) + " " + quotePair)
-			orderBuyStartPrice = round(float(orderBuyStartPrice) - float(gridDistance), decimalLimit)
-			buyCount = buyCount + 1
+		if not skipSetup:
+			#Notify User of bot instance in telegram
+			gridBotStart.sendTelegram(instanceName.strip() + ":\nStarting grid MM strategy")
+			#Clear any previous history and add new history
+			gridBotStart.updateRunHistory(instanceName.strip() + ":\nStarting grid MM strategy", "history", "yes")
+
+			#Store grid count
+			numberGrids = int(float(numberOfGrids)/2)
+			if numberOfGrids <= 2:
+				orderString = "order"
+			else:
+				orderString = "orders"
+			gridBotStart.sendTelegram(str(numberGrids) + " " + orderString + " will be placed on buy side")
+			gridBotStart.sendTelegram(str(numberGrids) + " " + orderString + " will be placed on sell side")
+			gridBotStart.updateRunHistory(str(numberGrids) + " " + orderString + " will be placed on buy side")
+			gridBotStart.updateRunHistory(str(numberGrids) + " " + orderString + " will be placed on sell side")
 			
 
-		#Create sell orders for specified grids
-		sellCount = 1
-		orderSellStartPrice = round(float(lowerSellPrice), decimalLimit)
-		orderSellSide = "SELL"
-		while sellCount <= numberGrids:
-			myOrder = {'error':'temp'}
-			try:
-				myOrder = pyCossClient.create_order(orderPair, orderSellSide, orderType, orderSize, round(orderSellStartPrice, decimalLimit))
-			except:
-				print("Failed to access exchange when attempting to create order!")
-				tk.messagebox.showinfo("Failed to connect to exchange when creating order!")
-				gridBotStart.cancelOrders(pyCossClient, allOrders)
-				exit(0)
-			if "error" in myOrder:
-				print("Some error was encountered when trying to create sell order#" + str(sellCount) + " with price " + gridBotStart.floatToStr(round(orderSellStartPrice, decimalLimit)) + " " + quotePair + ".\n\nError Description from Exchange:\n" + myOrder['error_description'] + "\nYour total: Size("+ gridBotStart.floatToStr(orderSize) +") * Price("+ gridBotStart.floatToStr(round(orderBuySellPrice), decimalLimit) +") = " + gridBotStart.floatToStr((float(orderSize)*float(orderBuySellPrice))) + "\nCancelling orders and stopping, please check your strategy!")
-				tk.messagebox.showinfo("Error creating sell order!", "Some error was encountered when creating a sell order, please ensure you have enough balance and you are above the minimum threshold for the trading pair.\n\nError Description from Exchange:\n" + myOrder['error_description'] + "\nYour total: Size("+ gridBotStart.floatToStr(orderSize) +") * Price("+ gridBotStart.floatToStr(round(orderBuySellPrice, decimalLimit)) +") = " + gridBotStart.floatToStr((float(orderSize)*float(orderBuySellPrice))) + "\nCancelling orders and stopping, please check your strategy!")
-				gridBotStart.cancelOrders(pyCossClient, allOrders)
-				exit(0)
-			myOrder['grid_status'] = 'open'
-			allOrders.append(myOrder)
-			gridBotStart.sendTelegram("Sell order " + str(sellCount) + " created at " + gridBotStart.floatToStr(round(orderSellStartPrice, decimalLimit)) + " " + quotePair)
-			gridBotStart.updateRunHistory("Sell order #" + str(sellCount) + " created at " + gridBotStart.floatToStr(round(orderSellStartPrice, decimalLimit)) + " " + quotePair)
-			orderSellStartPrice = round(float(orderSellStartPrice) + float(gridDistance), decimalLimit)
-			sellCount = sellCount + 1
+			#Create buy orders for specified grids
+			buyCount = 1
+			orderBuyStartPrice = round(float(higherBuyPrice), decimalLimit)
+			orderBuySide = "BUY"
+			while buyCount <= numberGrids:
+				myOrder = {'error':'temp'}
+				try:
+					myOrder = pyCossClient.create_order(orderPair, orderBuySide, orderType, orderSize, round(orderBuyStartPrice, decimalLimit))
+				except:
+					print("Failed to access exchange when attempting to create order!")
+					tk.messagebox.showinfo("Failed to connect to exchange when creating order!")
+					if buyCount > 1:
+						gridBotStart.cancelOrders(pyCossClient, allOrders)
+					exit(0)
+				if "error" in myOrder:
+					print("Some error was encountered when trying to create buy order#" + str(buyCount) + " with price " + gridBotStart.floatToStr(round(orderBuyStartPrice, decimalLimit)) + " " + quotePair + ".\n\nError Description from Exchange:\n" + myOrder['error_description'] + "\nYour total: Size("+ gridBotStart.floatToStr(orderSize) +") * Price("+ gridBotStart.floatToStr(round(orderBuyStartPrice,decimalLimit)) +") = " + gridBotStart.floatToStr((float(orderSize)*float(orderBuyStartPrice))) + "\nCancelling orders and stopping, please check your strategy!")
+					tk.messagebox.showinfo("Error creating buy order!", "Some error was encountered when creating a buy order, please ensure you have enough balance and you are above the minimum threshold for the trading pair.\n\nError Description from Exchange:\n" + myOrder['error_description'] + "\nYour total: Size("+ gridBotStart.floatToStr(orderSize) +") * Price("+ gridBotStart.floatToStr(round(orderBuyStartPrice,decimalLimit)) +") = " + gridBotStart.floatToStr((float(orderSize)*float(orderBuyStartPrice))) + "\nCancelling orders and stopping, please check your strategy!")
+					if buyCount > 1:
+						gridBotStart.cancelOrders(pyCossClient, allOrders)
+					exit(0)
+				myOrder['grid_status'] = 'open'
+				allOrders.append(myOrder)
+				gridBotStart.sendTelegram("Buy order " + str(buyCount) + " created at " + gridBotStart.floatToStr(round(orderBuyStartPrice, decimalLimit)) + " " + quotePair)
+				gridBotStart.updateRunHistory("Buy order #" + str(buyCount) + " created at " + gridBotStart.floatToStr(round(orderBuyStartPrice, decimalLimit)) + " " + quotePair)
+				orderBuyStartPrice = round(float(orderBuyStartPrice) - float(gridDistance), decimalLimit)
+				buyCount = buyCount + 1
+				
 
-		#Save all the orders
-		gridBotStart.saveOrders(allOrders)
+			#Create sell orders for specified grids
+			sellCount = 1
+			orderSellStartPrice = round(float(lowerSellPrice), decimalLimit)
+			orderSellSide = "SELL"
+			while sellCount <= numberGrids:
+				myOrder = {'error':'temp'}
+				try:
+					myOrder = pyCossClient.create_order(orderPair, orderSellSide, orderType, orderSize, round(orderSellStartPrice, decimalLimit))
+				except:
+					print("Failed to access exchange when attempting to create order!")
+					tk.messagebox.showinfo("Failed to connect to exchange when creating order!")
+					if sellCount > 1:
+						gridBotStart.cancelOrders(pyCossClient, allOrders)
+					exit(0)
+				if "error" in myOrder:
+					print("Some error was encountered when trying to create sell order#" + str(sellCount) + " with price " + gridBotStart.floatToStr(round(orderSellStartPrice, decimalLimit)) + " " + quotePair + ".\n\nError Description from Exchange:\n" + myOrder['error_description'] + "\nYour total: Size("+ gridBotStart.floatToStr(orderSize) +") * Price("+ gridBotStart.floatToStr(round(orderBuySellPrice), decimalLimit) +") = " + gridBotStart.floatToStr((float(orderSize)*float(orderBuySellPrice))) + "\nCancelling orders and stopping, please check your strategy!")
+					tk.messagebox.showinfo("Error creating sell order!", "Some error was encountered when creating a sell order, please ensure you have enough balance and you are above the minimum threshold for the trading pair.\n\nError Description from Exchange:\n" + myOrder['error_description'] + "\nYour total: Size("+ gridBotStart.floatToStr(orderSize) +") * Price("+ gridBotStart.floatToStr(round(orderBuySellPrice, decimalLimit)) +") = " + gridBotStart.floatToStr((float(orderSize)*float(orderBuySellPrice))) + "\nCancelling orders and stopping, please check your strategy!")
+					if sellCount > 1:
+						gridBotStart.cancelOrders(pyCossClient, allOrders)
+					exit(0)
+				myOrder['grid_status'] = 'open'
+				allOrders.append(myOrder)
+				gridBotStart.sendTelegram("Sell order " + str(sellCount) + " created at " + gridBotStart.floatToStr(round(orderSellStartPrice, decimalLimit)) + " " + quotePair)
+				gridBotStart.updateRunHistory("Sell order #" + str(sellCount) + " created at " + gridBotStart.floatToStr(round(orderSellStartPrice, decimalLimit)) + " " + quotePair)
+				orderSellStartPrice = round(float(orderSellStartPrice) + float(gridDistance), decimalLimit)
+				sellCount = sellCount + 1
+
+			#Save all the orders
+			gridBotStart.saveOrders(allOrders)
 
 		#Check all orders and update as necessary in permanent while loop every 4 seconds
-		totalProfit = 0
 		while True:
 			#Load orders and check status of each order. If order is completed create a new order on opposite side of grid. Make sure orders are within price range
 			loadAndCheckOrders = gridBotStart.loadOrders()
@@ -254,6 +276,8 @@ class gridBotStart:
 							totalProfit = totalProfit + (float(orderSize)*float(gridDistance))
 							gridBotStart.sendTelegram(instanceName + " Total profit: " + gridBotStart.floatToStr(totalProfit) + " " + quotePair)
 							gridBotStart.updateRunHistory(instanceName + " Total profit: " + gridBotStart.floatToStr(totalProfit) + " " + quotePair)
+							with open('totalProfit.pickle', 'wb') as f:
+								pickle.dump([totalProfit], f)
 						#Save new order
 						loadAndCheckOrders[count] = newOrder
 					elif orderSide == "BUY" and price >= float(lowerBuyPrice) and price <= float(higherSellPrice):
@@ -277,6 +301,8 @@ class gridBotStart:
 							totalProfit = totalProfit + (float(orderSize)*float(gridDistance))
 							gridBotStart.sendTelegram(instanceName + " Total profit: " + gridBotStart.floatToStr(totalProfit) + " " + quotePair)
 							gridBotStart.updateRunHistory(instanceName + " Total profit: " + gridBotStart.floatToStr(totalProfit) + " " + quotePair)
+							with open('totalProfit.pickle', 'wb') as f:
+								pickle.dump([totalProfit], f)
 						loadAndCheckOrders[count] = newOrder
 					else:
 						print("Price doesn't fall within your specified price range")
