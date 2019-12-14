@@ -6,6 +6,8 @@ import pickle
 import requests
 import tkinter as tk
 import exchange
+import sys
+from sys import exit
 from exchange import exchangeInfo
 from tkinter import messagebox
 
@@ -167,6 +169,7 @@ class gridBotStart:
 						gridBotStart.cancelOrders(pyCossClient, allOrders)
 					exit(0)
 				myOrder['grid_status'] = 'open'
+				myOrder['start_price'] = gridBotStart.floatToStr(round(orderBuyStartPrice, decimalLimit))
 				allOrders.append(myOrder)
 				gridBotStart.sendTelegram("Buy order " + str(buyCount) + " created at " + gridBotStart.floatToStr(round(orderBuyStartPrice, decimalLimit)) + " " + quotePair)
 				gridBotStart.updateRunHistory("Buy order #" + str(buyCount) + " created at " + gridBotStart.floatToStr(round(orderBuyStartPrice, decimalLimit)) + " " + quotePair)
@@ -189,12 +192,13 @@ class gridBotStart:
 						gridBotStart.cancelOrders(pyCossClient, allOrders)
 					exit(0)
 				if "error" in myOrder:
-					print("Some error was encountered when trying to create sell order#" + str(sellCount) + " with price " + gridBotStart.floatToStr(round(orderSellStartPrice, decimalLimit)) + " " + quotePair + ".\n\nError Description from Exchange:\n" + myOrder['error_description'] + "\nYour total: Size("+ gridBotStart.floatToStr(orderSize) +") * Price("+ gridBotStart.floatToStr(round(orderBuySellPrice), decimalLimit) +") = " + gridBotStart.floatToStr((float(orderSize)*float(orderBuySellPrice))) + "\nCancelling orders and stopping, please check your strategy!")
-					tk.messagebox.showinfo("Error creating sell order!", "Some error was encountered when creating a sell order, please ensure you have enough balance and you are above the minimum threshold for the trading pair.\n\nError Description from Exchange:\n" + myOrder['error_description'] + "\nYour total: Size("+ gridBotStart.floatToStr(orderSize) +") * Price("+ gridBotStart.floatToStr(round(orderBuySellPrice, decimalLimit)) +") = " + gridBotStart.floatToStr((float(orderSize)*float(orderBuySellPrice))) + "\nCancelling orders and stopping, please check your strategy!")
+					print("Some error was encountered when trying to create sell order#" + str(sellCount) + " with price " + gridBotStart.floatToStr(round(orderSellStartPrice, decimalLimit)) + " " + quotePair + ".\n\nError Description from Exchange:\n" + myOrder['error_description'] + "\nYour total: Size("+ gridBotStart.floatToStr(orderSize) +") * Price("+ gridBotStart.floatToStr(round(orderSellStartPrice, decimalLimit)) +") = " + gridBotStart.floatToStr((float(orderSize)*float(orderSellStartPrice))) + "\nCancelling orders and stopping, please check your strategy!")
+					tk.messagebox.showinfo("Error creating sell order!", "Some error was encountered when creating a sell order, please ensure you have enough balance and you are above the minimum threshold for the trading pair.\n\nError Description from Exchange:\n" + myOrder['error_description'] + "\nYour total: Size("+ gridBotStart.floatToStr(orderSize) +") * Price("+ gridBotStart.floatToStr(round(orderSellStartPrice, decimalLimit)) +") = " + gridBotStart.floatToStr((float(orderSize)*float(orderSellStartPrice))) + "\nCancelling orders and stopping, please check your strategy!")
 					if sellCount > 1:
 						gridBotStart.cancelOrders(pyCossClient, allOrders)
 					exit(0)
 				myOrder['grid_status'] = 'open'
+				myOrder['start_price'] = gridBotStart.floatToStr(round(orderSellStartPrice, decimalLimit))
 				allOrders.append(myOrder)
 				gridBotStart.sendTelegram("Sell order " + str(sellCount) + " created at " + gridBotStart.floatToStr(round(orderSellStartPrice, decimalLimit)) + " " + quotePair)
 				gridBotStart.updateRunHistory("Sell order #" + str(sellCount) + " created at " + gridBotStart.floatToStr(round(orderSellStartPrice, decimalLimit)) + " " + quotePair)
@@ -243,14 +247,14 @@ class gridBotStart:
 					print("Order " + str(orderCount) + " completed. Creating new order on opposite side.")
 					if str(currentStatus['order_side']) == "SELL":
 						orderSide = "BUY"
-						buyPrice = round(float(currentStatus['order_price']) - float(gridDistance), decimalLimit)
+						buyPrice = round(float(orders['start_price']) - float(gridDistance), decimalLimit)
 						if buyPrice >= round(float(latestAskBid[0]), decimalLimit):
 							price = round(float(latestAskBid[0]) - float(gridDistance), decimalLimit)
 						else:
 							price = buyPrice
 					else:
 						orderSide = "SELL"
-						sellPrice = round(float(currentStatus['order_price']) + float(gridDistance), decimalLimit)
+						sellPrice = round(float(orders['start_price']) + float(gridDistance), decimalLimit)
 						if sellPrice <= round(float(latestAskBid[1]), decimalLimit):
 							price = round(float(latestAskBid[1]) + float(gridDistance), decimalLimit)
 						else:
@@ -279,6 +283,7 @@ class gridBotStart:
 							with open('totalProfit.pickle', 'wb') as f:
 								pickle.dump([totalProfit], f)
 						#Save new order
+						newOrder['start_price'] = round(price, decimalLimit)
 						loadAndCheckOrders[count] = newOrder
 					elif orderSide == "BUY" and price >= float(lowerBuyPrice) and price <= float(higherSellPrice):
 						newOrder = None
@@ -303,6 +308,8 @@ class gridBotStart:
 							gridBotStart.updateRunHistory(instanceName + " Total profit: " + gridBotStart.floatToStr(totalProfit) + " " + quotePair)
 							with open('totalProfit.pickle', 'wb') as f:
 								pickle.dump([totalProfit], f)
+						#Save new order
+						newOrder['start_price'] = round(price, decimalLimit)
 						loadAndCheckOrders[count] = newOrder
 					else:
 						print("Price doesn't fall within your specified price range")
