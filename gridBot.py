@@ -283,7 +283,8 @@ class gridBotStart:
 							with open('totalProfit.pickle', 'wb') as f:
 								pickle.dump([totalProfit], f)
 						#Save new order
-						newOrder['start_price'] = round(price, decimalLimit)
+						originalPrice = round(float(orders['start_price']) + float(gridDistance), decimalLimit)
+						newOrder['start_price'] = round(originalPrice, decimalLimit)
 						loadAndCheckOrders[count] = newOrder
 					elif orderSide == "BUY" and price >= float(lowerBuyPrice) and price <= float(higherSellPrice):
 						newOrder = None
@@ -309,7 +310,8 @@ class gridBotStart:
 							with open('totalProfit.pickle', 'wb') as f:
 								pickle.dump([totalProfit], f)
 						#Save new order
-						newOrder['start_price'] = round(price, decimalLimit)
+						originalPrice = round(float(orders['start_price']) - float(gridDistance), decimalLimit)
+						newOrder['start_price'] = round(originalPrice, decimalLimit)
 						loadAndCheckOrders[count] = newOrder
 					else:
 						print("Price doesn't fall within your specified price range")
