@@ -280,7 +280,7 @@ class gridBotStart:
 							newOrder['grid_status'] = 'close'
 						else:
 							newOrder['grid_status'] = 'open'
-							profitGenerated = abs(round(float(currentStatus['prev_price']), decimalLimit) - round(float(currentStatus['order_price']), decimalLimit))
+							profitGenerated = abs(round(float(orders['prev_price']), decimalLimit) - round(float(currentStatus['order_price']), decimalLimit))
 							totalProfit = totalProfit + (float(orderSize)*float(profitGenerated))
 							gridBotStart.sendTelegram(instanceName + " Total profit: " + gridBotStart.floatToStr(totalProfit) + " " + quotePair)
 							gridBotStart.updateRunHistory(instanceName + " Total profit: " + gridBotStart.floatToStr(totalProfit) + " " + quotePair)
@@ -309,7 +309,7 @@ class gridBotStart:
 							newOrder['grid_status'] = 'close'
 						else:
 							newOrder['grid_status'] = 'open'
-							profitGenerated = abs(round(float(currentStatus['prev_price']), decimalLimit) - round(float(currentStatus['order_price']), decimalLimit))
+							profitGenerated = abs(round(float(orders['prev_price']), decimalLimit) - round(float(currentStatus['order_price']), decimalLimit))
 							totalProfit = totalProfit + (float(orderSize)*float(profitGenerated))
 							gridBotStart.sendTelegram(instanceName + " Total profit: " + gridBotStart.floatToStr(totalProfit) + " " + quotePair)
 							gridBotStart.updateRunHistory(instanceName + " Total profit: " + gridBotStart.floatToStr(totalProfit) + " " + quotePair)
