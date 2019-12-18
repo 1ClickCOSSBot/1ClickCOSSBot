@@ -193,17 +193,19 @@ def calcRequiredBalance():
 	with open('gridSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
 		quoteCalc, tradeCalc, temp, temp, orderSize, gridDistance, temp, higherBuyPrice, lowerSellPrice, temp, numberOfGrids = pickle.load(f)
 
+	oneSideGrids = int(numberOfGrids)/2
+
 	#Calculate quote balance required
 	total = 0
 	currentPrice = float(higherBuyPrice)
-	for x in range(int(numberOfGrids)):
+	for x in range(int(oneSideGrids)):
 		total = total + (int(orderSize) * currentPrice)
 		currentPrice = currentPrice - float(gridDistance)
 	total = round(total, 6)
 	balancesRequired[0] = total
 
 	#Calculate trade balance required
-	tradeBalance = int(orderSize) * int(numberOfGrids)
+	tradeBalance = int(orderSize) * int(oneSideGrids)
 	balancesRequired[1] = tradeBalance
 	#Return balances
 	return balancesRequired
