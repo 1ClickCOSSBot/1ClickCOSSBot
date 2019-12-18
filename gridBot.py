@@ -170,6 +170,7 @@ class gridBotStart:
 					exit(0)
 				myOrder['grid_status'] = 'open'
 				myOrder['start_price'] = gridBotStart.floatToStr(round(orderBuyStartPrice, decimalLimit))
+				myOrder['prev_price'] = 0
 				allOrders.append(myOrder)
 				gridBotStart.sendTelegram("Buy order " + str(buyCount) + " created at " + gridBotStart.floatToStr(round(orderBuyStartPrice, decimalLimit)) + " " + quotePair)
 				gridBotStart.updateRunHistory("Buy order #" + str(buyCount) + " created at " + gridBotStart.floatToStr(round(orderBuyStartPrice, decimalLimit)) + " " + quotePair)
@@ -199,6 +200,7 @@ class gridBotStart:
 					exit(0)
 				myOrder['grid_status'] = 'open'
 				myOrder['start_price'] = gridBotStart.floatToStr(round(orderSellStartPrice, decimalLimit))
+				myOrder['prev_price'] = 0
 				allOrders.append(myOrder)
 				gridBotStart.sendTelegram("Sell order " + str(sellCount) + " created at " + gridBotStart.floatToStr(round(orderSellStartPrice, decimalLimit)) + " " + quotePair)
 				gridBotStart.updateRunHistory("Sell order #" + str(sellCount) + " created at " + gridBotStart.floatToStr(round(orderSellStartPrice, decimalLimit)) + " " + quotePair)
@@ -272,12 +274,14 @@ class gridBotStart:
 						gridBotStart.updateRunHistory("Grid order " + str(orderCount) + " (Buy @ " + gridBotStart.floatToStr(round(float(currentStatus['order_price']), decimalLimit)) + ") completed.")
 						gridBotStart.sendTelegram("Grid order " + str(orderCount) + " created. Sell at " + gridBotStart.floatToStr(round(float(price), decimalLimit)) + " " + quotePair)
 						gridBotStart.updateRunHistory("Grid order " + str(orderCount) + " created. Sell at " + gridBotStart.floatToStr(round(float(price), decimalLimit)) + " " + quotePair)
+						newOrder['prev_price'] = round(float(currentStatus['order_price']), decimalLimit)
 						#Check if order was a grid completion and print profit
 						if orders['grid_status'] == 'open':
 							newOrder['grid_status'] = 'close'
 						else:
 							newOrder['grid_status'] = 'open'
-							totalProfit = totalProfit + (float(orderSize)*float(gridDistance))
+							profitGenerated = abs(round(float(currentStatus['prev_price']), decimalLimit) - round(float(currentStatus['order_price']), decimalLimit))
+							totalProfit = totalProfit + (float(orderSize)*float(profitGenerated))
 							gridBotStart.sendTelegram(instanceName + " Total profit: " + gridBotStart.floatToStr(totalProfit) + " " + quotePair)
 							gridBotStart.updateRunHistory(instanceName + " Total profit: " + gridBotStart.floatToStr(totalProfit) + " " + quotePair)
 							with open('totalProfit.pickle', 'wb') as f:
@@ -299,12 +303,14 @@ class gridBotStart:
 						gridBotStart.updateRunHistory("Grid order " + str(orderCount) + " (Sell @ " + gridBotStart.floatToStr(round(float(currentStatus['order_price']), decimalLimit)) + ") completed.")
 						gridBotStart.sendTelegram("Grid order " + str(orderCount) + " created. Buy at " + gridBotStart.floatToStr(round(float(price), decimalLimit)) + " " + quotePair)
 						gridBotStart.updateRunHistory("Grid order " + str(orderCount) + " created. Buy at " + gridBotStart.floatToStr(round(float(price), decimalLimit)) + " " + quotePair)
+						newOrder['prev_price'] = round(float(currentStatus['order_price']), decimalLimit)
 						#Check if order was a grid completion and print profit
 						if orders['grid_status'] == 'open':
 							newOrder['grid_status'] = 'close'
 						else:
 							newOrder['grid_status'] = 'open'
-							totalProfit = totalProfit + (float(orderSize)*float(gridDistance))
+							profitGenerated = abs(round(float(currentStatus['prev_price']), decimalLimit) - round(float(currentStatus['order_price']), decimalLimit))
+							totalProfit = totalProfit + (float(orderSize)*float(profitGenerated))
 							gridBotStart.sendTelegram(instanceName + " Total profit: " + gridBotStart.floatToStr(totalProfit) + " " + quotePair)
 							gridBotStart.updateRunHistory(instanceName + " Total profit: " + gridBotStart.floatToStr(totalProfit) + " " + quotePair)
 							with open('totalProfit.pickle', 'wb') as f:

@@ -154,7 +154,7 @@ def openRun():
 
 	#Load Strategy Settings
 	with open('gridSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
-		quotePair, tradePair, publicKey, privateKey, orderSize, gridDistance, lowerBuyPrice, higherBuyPrice, lowerSellPrice, higherSellPrice, numberOfGrids = pickle.load(f)
+		quotePairRun, tradePairRun, temp, temp, orderSize, gridDistance, lowerBuyPrice, higherBuyPrice, lowerSellPrice, higherSellPrice, numberOfGrids = pickle.load(f)
 		
 	clearFrames()
 	runBtn.config(bg=BTNCLICKEDBG, fg=BTNCLICKEDFG)
@@ -166,12 +166,47 @@ def openRun():
 	runStrategyBox.config(state="disabled")
 	runTradePairBox.config(state="normal")
 	runTradePairBox.delete('1.0', tk.END)
-	runTradePairBox.insert(tk.END, tradePair + "_" + quotePair)
+	runTradePairBox.insert(tk.END, tradePairRun + "_" + quotePairRun)
 	runTradePairBox.config(state="disabled")
 	runInstanceNameBox.delete('1.0', tk.END)
-	runInstanceNameBox.insert(tk.END, "Grid MM" + "_" + tradePair + "_" + quotePair)
+	runInstanceNameBox.insert(tk.END, "Grid MM" + "_" + tradePairRun + "_" + quotePairRun)
+	
+	balancesRequired = calcRequiredBalance()
+	quoteBalanceUseLabel.config(text=" Amount of " + quotePairRun + " needed for strategy:")
+	tradeBalanceUseLabel.config(text=" Amount of " + tradePairRun + " needed for strategy:")
+	quoteBalanceUseBox.config(state="normal")
+	quoteBalanceUseBox.delete('1.0', tk.END)
+	quoteBalanceUseBox.insert(tk.END, str(balancesRequired[0]))
+	quoteBalanceUseBox.config(state="disabled")
+	tradeBalanceUseBox.config(state="normal")
+	tradeBalanceUseBox.delete('1.0', tk.END)
+	tradeBalanceUseBox.insert(tk.END, str(balancesRequired[1]))
+	tradeBalanceUseBox.config(state="disabled")
+
 
 	runFrame.place(relwidth=FRAMEHEIGHT, relheight=FRAMEWIDTH, relx=FRAMEPADX, rely=FRAMEPADY)
+
+def calcRequiredBalance():
+	balancesRequired = [0, 0]
+
+	#Load Strategy Settings
+	with open('gridSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
+		quoteCalc, tradeCalc, temp, temp, orderSize, gridDistance, temp, higherBuyPrice, lowerSellPrice, temp, numberOfGrids = pickle.load(f)
+
+	#Calculate quote balance required
+	total = 0
+	currentPrice = float(higherBuyPrice)
+	for x in range(int(numberOfGrids)):
+		total = total + (int(orderSize) * currentPrice)
+		currentPrice = currentPrice - float(gridDistance)
+	total = round(total, 6)
+	balancesRequired[0] = total
+
+	#Calculate trade balance required
+	tradeBalance = int(orderSize) * int(numberOfGrids)
+	balancesRequired[1] = tradeBalance
+	#Return balances
+	return balancesRequired
 
 #Create function for about button
 def openAbout():
@@ -293,8 +328,8 @@ def quotePairChanged(event, trade = None):
 	tradingPairChanged(None, trade)
 
 	quotePairBalanceLabel.config(text="    Quote Balance (" + quotePair.get() + ")")
-	buyRangeLabel.config(text="    Buy Price Range (" + quotePair.get() + ")")
-	sellRangeLabel.config(text="    Sell Price Range (" + quotePair.get() + ")")
+	buyRangeLabel.config(text="    Stop Price Range (" + quotePair.get() + ")")
+	sellRangeLabel.config(text="    Start Buy / Sell (" + quotePair.get() + ")")
 	gridDistanceLabel.config(text="    Grid Distance (" + quotePair.get() + ")")
 	currentPriceLabel.config(text="    Current Price (" + quotePair.get() + ")")
 
@@ -345,12 +380,6 @@ def startStrategy():
 def strategyThread(name):
 	myGridBot = gridBotStart
 	myGridBot.gridStart(name)
-
-def demoCheckBoxChanged():
-	if demoVar.get() == 0:
-		print("Demo Mode disabled")
-	else:
-		print ("Demo Mode enabled")
 
 def telegramCheckBoxChanged():
 	if telegramVar.get() == 0:
@@ -570,19 +599,19 @@ gridDistanceBox.insert(tk.END, "0.000001")
 gridDistanceBox.config(bg="white", fg="black")
 gridDistanceBox.grid(row=7, column=2)
 
-sellRangeLabel = tk.Label(gridStratFrame, text="    Sell Price Range (" + quotePair.get() + ")")
+sellRangeLabel = tk.Label(gridStratFrame, text="    Start Buy / Sell (" + quotePair.get() + ")")
 sellRangeLabel.config(relief=FLAT, bg="#182923", fg=FOREGROUND)
 sellRangeLabel.grid(row=8, column=0, sticky="W")
 sellPriceLowerBox = tk.Text(gridStratFrame, width=12, height=1)
 sellPriceLowerBox.insert(tk.END, "0.000065")
-sellPriceLowerBox.config(bg="#cc3300", fg="white")
-sellPriceLowerBox.grid(row=8, column=1)
+sellPriceLowerBox.config(bg="white", fg="black")
+sellPriceLowerBox.grid(row=8, column=2)
 sellPriceHigherBox = tk.Text(gridStratFrame, width=12, height=1)
 sellPriceHigherBox.insert(tk.END, "0.000095")
 sellPriceHigherBox.config(bg="#336600", fg="white")
-sellPriceHigherBox.grid(row=8, column=2)
+sellPriceHigherBox.grid(row=9, column=2)
 
-buyRangeLabel = tk.Label(gridStratFrame, text="    Buy Price Range (" + quotePair.get() + ")")
+buyRangeLabel = tk.Label(gridStratFrame, text="    Stop Price Range (" + quotePair.get() + ")")
 buyRangeLabel.config(relief=FLAT, bg="#182923", fg=FOREGROUND)
 buyRangeLabel.grid(row=9, column=0, sticky="W")
 buyPriceLowerBox = tk.Text(gridStratFrame, width=12, height=1)
@@ -591,8 +620,8 @@ buyPriceLowerBox.config(bg="#cc3300", fg="white")
 buyPriceLowerBox.grid(row=9, column=1)
 buyPriceHigherBox = tk.Text(gridStratFrame, width=12, height=1)
 buyPriceHigherBox.insert(tk.END, "0.000095")
-buyPriceHigherBox.config(bg="#336600", fg="white")
-buyPriceHigherBox.grid(row=9, column=2)
+buyPriceHigherBox.config(bg="white", fg="black")
+buyPriceHigherBox.grid(row=8, column=1)
 
 gridNumberLabel = tk.Label(gridStratFrame, text="\n    Number Of Grids")
 gridNumberLabel.config(relief=FLAT, bg="#182923", fg=FOREGROUND)
@@ -618,17 +647,26 @@ runTradePairBox = tk.Text(runFrame, width=12, height=1)
 runTradePairBox.config(state="disabled", bg=BACKGROUND, fg=FOREGROUND)
 runTradePairBox.grid(row=2, column=2, sticky="W")
 
+quoteBalanceUseLabel = tk.Label(runFrame, text=" Amount of " + quotePair.get() + " needed:")
+quoteBalanceUseLabel.config(relief=FLAT, bg=BACKGROUND, fg=FOREGROUND)
+quoteBalanceUseLabel.grid(row=3, column=0, sticky="W")
+quoteBalanceUseBox = tk.Text(runFrame, width=12, height=1)
+quoteBalanceUseBox.config(state="disabled", bg=BACKGROUND, fg=FOREGROUND)
+quoteBalanceUseBox.grid(row=3, column=2, sticky="W")
+
+tradeBalanceUseLabel = tk.Label(runFrame, text=" Amount of " + tradingPair.get() + " needed:")
+tradeBalanceUseLabel.config(relief=FLAT, bg=BACKGROUND, fg=FOREGROUND)
+tradeBalanceUseLabel.grid(row=4, column=0, sticky="W")
+tradeBalanceUseBox = tk.Text(runFrame, width=12, height=1)
+tradeBalanceUseBox.config(state="disabled", bg=BACKGROUND, fg=FOREGROUND)
+tradeBalanceUseBox.grid(row=4, column=2, sticky="W")
+
 runInstanceNameLabel = tk.Label(runFrame, text=" Name of Bot Instance:")
 runInstanceNameLabel.config(relief=FLAT, bg=BACKGROUND, fg=FOREGROUND)
-runInstanceNameLabel.grid(row=3, column=0, sticky="W")
-runInstanceNameBox = tk.Text(runFrame, width=16, height=1)
+runInstanceNameLabel.grid(row=5, column=0, sticky="W")
+runInstanceNameBox = tk.Text(runFrame, width=20, height=1)
 runInstanceNameBox.config(state="normal", bg="white", fg="black")
-runInstanceNameBox.grid(row=3, column=2, columnspan=2)
-
-demoVar = tk.IntVar()
-enableDemoChk = tk.Checkbutton(runFrame, text="Demo Mode", variable=demoVar, command=demoCheckBoxChanged)
-enableDemoChk.config(bg=BACKGROUND, fg="red")
-enableDemoChk.grid(row=4, sticky="W")
+runInstanceNameBox.grid(row=5, column=2, columnspan=2)
 
 #Define bottom frame for run page start button
 startRunFrame = tk.Frame(runFrame, bg=BACKGROUND)
