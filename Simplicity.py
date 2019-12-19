@@ -205,7 +205,7 @@ def calcRequiredBalance():
 	balancesRequired[0] = total
 
 	#Calculate trade balance required
-	tradeBalance = int(orderSize) * int(oneSideGrids)
+	tradeBalance = float(float(orderSize) * int(oneSideGrids))
 	balancesRequired[1] = tradeBalance
 	#Return balances
 	return balancesRequired
