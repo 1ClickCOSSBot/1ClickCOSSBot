@@ -42,14 +42,14 @@ class gridBotStart:
 		f.write(message)
 		f.close()
 
-	def saveOrders(orders):
+	def saveOrders(orders, fileName):
 		#Check if database file already exists, if file exists ask user if they would like to cancel all previous orders and start over
-		with open('orderDb.pickle', 'wb') as handle:
+		with open(fileName, 'wb') as handle:
 			pickle.dump(orders, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
-	def loadOrders():
+	def loadOrders(fileName):
 		orders = 0
-		with open('orderDb.pickle', 'rb') as handle:
+		with open(fileName, 'rb') as handle:
 			orders = pickle.load(handle)
 		return orders
 
@@ -118,7 +118,7 @@ class gridBotStart:
 			else:
 				skipSetup = False
 				print("Deleting and attempting to cancel previous orders!")
-				myOrders = gridBotStart.loadOrders()
+				myOrders = gridBotStart.loadOrders('orderDb.pickle')
 				gridBotStart.cancelOrders(pyCossClient, myOrders)
 				os.remove("orderDb.pickle")
 		
@@ -208,22 +208,71 @@ class gridBotStart:
 				sellCount = sellCount + 1
 
 			#Save all the orders
-			gridBotStart.saveOrders(allOrders)
+			gridBotStart.saveOrders(allOrders, 'orderDb.pickle')
+			gridBotStart.saveOrders(allOrders, 'backupOrders.pickle')
 
 		#Check all orders and update as necessary in permanent while loop every 4 seconds
 		while True:
+			#Check connection to exchange
+			connResult = False
+			try:
+				connResult = myExchange.checkConnection()
+			except:
+				print("Exchange connection test failed! You may need to restart the bot")
+				print(connResult)
+				time.sleep(10)
+				continue
+
+			if not connResult:
+				print("Connection to exchange cannot be established. Bot will wait 10 seconds and try again")
+				time.sleep(10)
+				continue
+
 			#Load orders and check status of each order. If order is completed create a new order on opposite side of grid. Make sure orders are within price range
-			loadAndCheckOrders = gridBotStart.loadOrders()
+			loadAndCheckOrders = gridBotStart.loadOrders('orderDb.pickle')
 			orderCount = 1
 			count = 0
 
 			for orders in loadAndCheckOrders:
 				print("Checking grid order #" + str(orderCount))
-				currentStatus = None
+				currentStatus = ""
 				try:
 					currentStatus = pyCossClient.get_order_details(orders['order_id'])
 				except:
-					print("Could not check this order due to connection issue")
+					#Check connection to exchange
+					recreateConnResult = False
+					try:
+						recreateConnResult = myExchange.checkConnection()
+					except:
+						print("Exchange connection test failed! You may need to restart the bot")
+						orderCount = orderCount + 1
+						count = count + 1
+						continue
+					if not recreateConnResult:
+						print("Connection to exchange cannot be established. Bot will try again on next iteration")
+						orderCount = orderCount + 1
+						count = count + 1
+						continue
+					print("Could not check this order due to some unknown issue, now attempting to re-create this grid!")
+					if os.path.exists("backupOrders.pickle"):
+						backupOrders = gridBotStart.loadOrders('backupOrders.pickle')
+						recreatePrice = round(float(backupOrders[count]['start_price']), decimalLimit)
+						recreateSide = backupOrders[count]['order_side']
+						try:
+							recreateOrder = pyCossClient.create_order(orderPair, recreateSide, orderType, orderSize, round(recreatePrice, decimalLimit))
+						except:
+							print("Either there wasn't enough balance to re-create this order at this time, or the exchange is unreachable. Will attempt creating order again on next loop")
+							orderCount = orderCount + 1
+							count = count + 1
+							continue
+						gridBotStart.sendTelegram("Grid order " + str(orderCount) + " was re-created from start price. Order is for a " + recreateSide + " at " + gridBotStart.floatToStr(round(float(recreatePrice), decimalLimit)) + " " + quotePair)
+						gridBotStart.updateRunHistory("Grid order " + str(orderCount) + " was re-created from start price. Order is for a " + recreateSide + " " + gridBotStart.floatToStr(round(float(recreatePrice), decimalLimit)) + " " + quotePair)
+						recreateOrder['prev_price'] = 0
+						recreateOrder['grid_status'] = 'open'
+						recreateOrder['start_price'] = round(recreatePrice, decimalLimit)
+						loadAndCheckOrders[count] = recreateOrder
+					else:
+						print("No backup file exists, likely because you started this instance with an older version of the bot. This order cannot be recovered.")
 					orderCount = orderCount + 1
 					count = count + 1
 					continue
@@ -280,7 +329,10 @@ class gridBotStart:
 							newOrder['grid_status'] = 'close'
 						else:
 							newOrder['grid_status'] = 'open'
-							profitGenerated = abs(round(float(orders['prev_price']), decimalLimit) - round(float(currentStatus['order_price']), decimalLimit))
+							if 'prev_price' in orders:
+								profitGenerated = abs(round(float(orders['prev_price']), decimalLimit) - round(float(currentStatus['order_price']), decimalLimit))
+							else:
+								profitGenerated = float(gridDistance)
 							totalProfit = totalProfit + (float(orderSize)*float(profitGenerated))
 							gridBotStart.sendTelegram(instanceName + " Total profit: " + gridBotStart.floatToStr(totalProfit) + " " + quotePair)
 							gridBotStart.updateRunHistory(instanceName + " Total profit: " + gridBotStart.floatToStr(totalProfit) + " " + quotePair)
@@ -309,7 +361,10 @@ class gridBotStart:
 							newOrder['grid_status'] = 'close'
 						else:
 							newOrder['grid_status'] = 'open'
-							profitGenerated = abs(round(float(orders['prev_price']), decimalLimit) - round(float(currentStatus['order_price']), decimalLimit))
+							if 'prev_price' in orders:
+								profitGenerated = abs(round(float(orders['prev_price']), decimalLimit) - round(float(currentStatus['order_price']), decimalLimit))
+							else:
+								profitGenerated = float(gridDistance)
 							totalProfit = totalProfit + (float(orderSize)*float(profitGenerated))
 							gridBotStart.sendTelegram(instanceName + " Total profit: " + gridBotStart.floatToStr(totalProfit) + " " + quotePair)
 							gridBotStart.updateRunHistory(instanceName + " Total profit: " + gridBotStart.floatToStr(totalProfit) + " " + quotePair)
@@ -326,6 +381,6 @@ class gridBotStart:
 				orderCount = orderCount + 1
 				count = count + 1
 				time.sleep(0.2)
-			gridBotStart.saveOrders(loadAndCheckOrders)
+			gridBotStart.saveOrders(loadAndCheckOrders, 'orderDb.pickle')
 			print("\nCheck completed. Waiting 4 seconds and checking again\n")
 			time.sleep(4)

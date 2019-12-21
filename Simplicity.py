@@ -150,8 +150,6 @@ def openRun():
 	'''
 	Switches frames to the run tab
 	'''	
-	#openSettings()
-
 	#Load Strategy Settings
 	with open('gridSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
 		quotePairRun, tradePairRun, temp, temp, orderSize, gridDistance, lowerBuyPrice, higherBuyPrice, lowerSellPrice, higherSellPrice, numberOfGrids = pickle.load(f)
@@ -185,30 +183,6 @@ def openRun():
 
 
 	runFrame.place(relwidth=FRAMEHEIGHT, relheight=FRAMEWIDTH, relx=FRAMEPADX, rely=FRAMEPADY)
-
-def calcRequiredBalance():
-	balancesRequired = [0, 0]
-
-	#Load Strategy Settings
-	with open('gridSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
-		quoteCalc, tradeCalc, temp, temp, orderSize, gridDistance, temp, higherBuyPrice, lowerSellPrice, temp, numberOfGrids = pickle.load(f)
-
-	oneSideGrids = int(numberOfGrids)/2
-
-	#Calculate quote balance required
-	total = 0
-	currentPrice = float(higherBuyPrice)
-	for x in range(int(oneSideGrids)):
-		total = total + (int(orderSize) * currentPrice)
-		currentPrice = currentPrice - float(gridDistance)
-	total = round(total, 6)
-	balancesRequired[0] = total
-
-	#Calculate trade balance required
-	tradeBalance = float(float(orderSize) * int(oneSideGrids))
-	balancesRequired[1] = tradeBalance
-	#Return balances
-	return balancesRequired
 
 #Create function for about button
 def openAbout():
@@ -300,20 +274,6 @@ def tradingPairChanged(event, pair):
 	currentPriceBox.insert(tk.END, pairPrice)
 	currentPriceBox.config(state="disabled")
 
-	'''
-	askBidPrices = [0, 0]
-	try: 
-		askBidPrices = balanceKeys.getPairAskBid(quotePair.get(), tradingPair.get())
-	except:
-		print("There was an error when fetching lowest ask and highest bid prices")
-	sellPriceLowerBox.delete('1.0', tk.END)
-	sellPriceLowerBox.insert(tk.END, askBidPrices[0])
-	sellPriceHigherBox.delete('1.0', tk.END)
-	sellPriceHigherBox.insert(tk.END, float(askBidPrices[0])+float(askBidPrices[1]))
-	buyPriceHigherBox.delete('1.0', tk.END)
-	buyPriceHigherBox.insert(tk.END, askBidPrices[1])
-	'''
-
 def quotePairChanged(event, trade = None):
 
 	#Update trading pair options
@@ -360,8 +320,6 @@ def saveStrategy():
 		messagebox.showinfo("Invalid", "Looks like you entered invalid API keys. Please try again!")
 		return 0
 
-	#Ensure users ordersize is higher than minimum threshold
-
 	#Save all settings to gridSettings.conf
 	with open('gridSettings.conf', 'wb') as f:
 	    pickle.dump([quotePair.get().strip(), tradingPair.get().strip(), testPublicKey, testPrivateKey, orderSizeBox.get("1.0", tk.END).strip(), gridDistanceBox.get("1.0", tk.END).strip(), buyPriceLowerBox.get("1.0", tk.END).strip(), buyPriceHigherBox.get("1.0", tk.END).strip(), sellPriceLowerBox.get("1.0", tk.END).strip(), sellPriceHigherBox.get("1.0", tk.END).strip(), numberOfGrids.get()], f)
@@ -369,9 +327,6 @@ def saveStrategy():
 	return 1
 
 def startStrategy():
-	
-	#messagebox.showinfo("Disabled", "Trading functions are not yet enabled")
-	#if False:
 	strategyWithArg = partial(strategyThread, runInstanceNameBox.get("1.0", tk.END).replace(" ", ""))
 	strategyTestThread = threading.Thread(target=strategyWithArg)
 	strategyTestThread.daemon = True
@@ -382,6 +337,75 @@ def startStrategy():
 def strategyThread(name):
 	myGridBot = gridBotStart
 	myGridBot.gridStart(name)
+
+def autoStrategy():
+	#Build Strategy settings automatically for user
+	pairPrice = 0
+	userQuoteBalance = 0
+	userTradeBalance = 0
+	useMaxBalance = tk.messagebox.askquestion('Warning','When using the auto strategy option Simplicity uses your maximum balances available. Once the strategy is autoconfigured you can simply reduce balance used by lowering the ordersize or reducing number of grids. Would you like to continue?')
+
+	if useMaxBalance == "no":
+		return 0	
+
+	messagebox.showinfo("Alert", "Simplicity will now gather some data. This may take a few seconds.")
+
+	#Get pair data from exchange
+	#Load selected pair balances
+	balances = {
+		"quote": 0.0,
+		"trade": 0.0
+	}
+	balancePublicKey = publicAPIKeyBox.get().strip()
+	balancePrivateKey = privateAPIKeyBox.get().strip()
+	balanceKeys = exchangeInfo(balancePublicKey, balancePrivateKey)
+	try:
+		balances = balanceKeys.getCryptoBalance(quotePair.get(), tradingPair.get())
+	except:
+		print("There was some error when loading balances")
+		messagebox.showinfo("Error", "There was some error when loading balances. Strategy could not be automatically configured")
+		return 0
+	userQuoteBalance = balances[0]
+	userTradeBalance = balances[1]
+
+	try: 
+		pairPrice = balanceKeys.getPairPrice(quotePair.get(), tradingPair.get())
+	except:
+		print("There was an error when fetching pair price")
+		messagebox.showinfo("Error", "There was an error when fetching pair price. Strategy could not be automatically configured")
+		return 0
+
+	calcOrderSize = 0
+	calcGridDistance = 0
+	calcStartBuy = 0
+	calcStartSell = 0
+	calcLowPrice = 0
+	calcHighPrice = 0
+	calcGrids = 0
+
+def calcRequiredBalance():
+	balancesRequired = [0, 0]
+
+	#Load Strategy Settings
+	with open('gridSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
+		quoteCalc, tradeCalc, temp, temp, orderSize, gridDistance, temp, higherBuyPrice, lowerSellPrice, temp, numberOfGrids = pickle.load(f)
+
+	oneSideGrids = int(numberOfGrids)/2
+
+	#Calculate quote balance required
+	total = 0
+	currentPrice = float(higherBuyPrice)
+	for x in range(int(oneSideGrids)):
+		total = total + (int(orderSize) * currentPrice)
+		currentPrice = currentPrice - float(gridDistance)
+	total = round(total, 6)
+	balancesRequired[0] = total
+
+	#Calculate trade balance required
+	tradeBalance = float(float(orderSize) * int(oneSideGrids))
+	balancesRequired[1] = tradeBalance
+	#Return balances
+	return balancesRequired
 
 def telegramCheckBoxChanged():
 	if telegramVar.get() == 0:
@@ -407,7 +431,6 @@ def telegramCheckBoxChanged():
 		chatIDBox.delete(0, tk.END)
 		chatIDBox.insert(tk.END, getTelegramChatIDChange.strip())
 		#messagebox.showinfo("Telegram Enabled", "To enable telegram alerts please insert your Telegram bot token and chat ID then press the 'Test and Save' button to enable.")
-
 
 def sendTelegramMessage(message, isATest):
 	'''
@@ -461,9 +484,9 @@ exchangeBtn = tk.Button(root, text="Extras", padx=BTNPADX_L, pady=5, highlightba
 #Define Home page UI elements
 homeInfo = tk.Text(homeFrame, relief=FLAT, fg=FOREGROUND, bg=BACKGROUND, height=24, width=47)
 homeInfo.pack()
-homeInfo.insert(tk.END, "\nSimplicity COSS Bot - version 0.1\n\nTo get started please first customize your bot\nfrom the strategy tab. You can also enable\ntelegram messaging from the settings tab.")
+homeInfo.insert(tk.END, "\nSimplicity COSS Bot - Version 1.0\n\nTo get started please first customize your bot\nfrom the strategy tab. You can also enable\ntelegram messaging from the settings tab.")
 homeInfo.insert(tk.END, "\n\nOnce configured you can run the bot from the\nrun tab")
-homeInfo.insert(tk.END, "\n\nLatest Updates (12/03/2019)\n---------------------------\n - First live build of Simplicity COSS bot\n - Added support for grid strategy\n - Added Settings page to customize bot\n - Added History page to keep track of trades\n - Added UI for ease of use")
+homeInfo.insert(tk.END, "\n\nLatest Updates (12/21/2019)\n---------------------------\n - First stable version of bot is live!\n - Added ability to re-create lost orders\n - Modified strategy UI for readability\n - Added ground work for auto strategy settings\n - Fixed profit calculation")
 homeInfo.insert(tk.END, "\n\nTrading is very risky, the use of this tool may\nresult in significant losses")
 homeInfo.insert(tk.END, "\n\nTo protect your primary COSS account, always\ncreate a second account for use with public\ntrading bots.")
 homeInfo.config(state="disabled")
