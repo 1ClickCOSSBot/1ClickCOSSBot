@@ -220,7 +220,7 @@ def historyReresh():
 				historyTextField.delete("1.0", tk.END)
 				historyTextField.insert(tk.END, f2.read())
 				historyTextField.see("end")
-		time.sleep(2)
+		time.sleep(10)
 
 def tradingPairChanged(event, pair):
 	'''
@@ -396,7 +396,7 @@ def calcRequiredBalance():
 	total = 0
 	currentPrice = float(higherBuyPrice)
 	for x in range(int(oneSideGrids)):
-		total = total + (int(orderSize) * currentPrice)
+		total = total + (float(orderSize) * float(currentPrice))
 		currentPrice = currentPrice - float(gridDistance)
 	total = round(total, 6)
 	balancesRequired[0] = total
