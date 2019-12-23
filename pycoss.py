@@ -29,7 +29,9 @@ class PyCOSSClient(object):
         self.ENGINE_URL = "https://engine.coss.io/api/v1"
         self.order_headers = {"Content-Type": "application/json",
                               "X-Requested-With": "XMLHttpRequest",
-                              "Authorization": self.API_PUBLIC, "Signature": None}
+                              "Authorization": self.API_PUBLIC, 
+                              "Signature": None, 
+                              "x-coss-bot": "CBS2312191"}
         self.s = requests.Session()
 
     def _sign(self, payload):
