@@ -13,6 +13,7 @@ from tkinter import *
 from tkinter import messagebox
 from PIL import Image, ImageTk
 from functools import partial
+from sys import exit
 
 '''
 Pre-Reqs
@@ -365,8 +366,8 @@ def autoStrategy():
 		print("There was some error when loading balances")
 		messagebox.showinfo("Error", "There was some error when loading balances. Strategy could not be automatically configured")
 		return 0
-	userQuoteBalance = balances[0]
-	userTradeBalance = balances[1]
+	userQuoteBalance = float(balances[0])
+	userTradeBalance = float(balances[1])
 
 	try: 
 		pairPrice = balanceKeys.getPairPrice(quotePair.get(), tradingPair.get())
@@ -406,6 +407,16 @@ def calcRequiredBalance():
 	balancesRequired[1] = tradeBalance
 	#Return balances
 	return balancesRequired
+
+def cancelAllOrders():
+	cancelAnswer = tk.messagebox.askquestion('Stop strategy?','Are you sure you want to stop the strategy and cancel all your orders? (Note: If you just want to restart the bot and not cancel orders, click no on this message and just close the window and re-start the bot from the run page)')
+	if cancelAnswer == 'yes':
+		print("Attempting to cancel all orders")
+		cancelBot = gridBotStart
+		cancelBot.cancelAndExit()
+		print("Bot will exit in 5 seconds! You can restart the bot to re-run the strategy.")
+		time.sleep(5)
+		exit(0)
 
 def telegramCheckBoxChanged():
 	if telegramVar.get() == 0:
@@ -739,6 +750,12 @@ tk.Label(historyFrame, text="", bg=BACKGROUND).grid(row=0, column=0)
 historyTextField = tk.Text(historyFrame, bg=BACKGROUND, fg=FOREGROUND, yscrollcommand=scroll.set, width=HISTORYWIDTH, height=HISTORYHEIGHT)
 historyTextField.grid(row=1, column=1, sticky="W")
 scroll.config(command=historyTextField.yview)
+
+#Define bottom frame for run page start button
+cancelOrderFrame = tk.Frame(historyFrame, bg=BACKGROUND)
+cancelOrderFrame.place(relwidth=FRAMEWIDTH*1.25, relheight=FRAMEHEIGHT/6.5, relx=0, rely=FRAMEPADY*7.2)
+cancelOrderBtn = tk.Button(cancelOrderFrame, text="Cancel Orders and Stop", padx=10, pady=4, highlightbackground=BACKGROUND, fg=BTNFG, bg=BTNBG, height=1, width=18, command=cancelAllOrders, relief=FLAT)
+cancelOrderBtn.pack()
 
 #Setup UI elements
 root.winfo_toplevel().title("Simplicity")

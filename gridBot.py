@@ -63,6 +63,16 @@ class gridBotStart:
 				continue
 			print("Success!")
 
+	def cancelAndExit():
+		with open('gridSettings.conf', 'rb') as f:
+			temp, temp, publicKey, privateKey, temp, temp, temp, temp, temp, temp, temp = pickle.load(f)
+		exitCossClient = PyCOSSClient(api_public=publicKey, api_secret=privateKey)
+		if os.path.exists("orderDb.pickle"):
+			myOrders = gridBotStart.loadOrders('orderDb.pickle')
+			gridBotStart.cancelOrders(exitCossClient, myOrders)
+		else:
+			print("No orders exist to cancel!")
+
 	def floatToStr(originalNumber):
 		actualNumber = float(originalNumber)
 		decimalCount = 0
@@ -87,9 +97,8 @@ class gridBotStart:
 
 		#Create pycoss object with API keys and load strategy settings
 		with open('gridSettings.conf', 'rb') as f:
-			    quotePair, tradePair, publicKey, privateKey, orderSize, gridDistance, lowerBuyPrice, higherBuyPrice, lowerSellPrice, higherSellPrice, numberOfGrids = pickle.load(f)
-		pyCossClient = PyCOSSClient(api_public=publicKey,
-		                           api_secret=privateKey)
+			quotePair, tradePair, publicKey, privateKey, orderSize, gridDistance, lowerBuyPrice, higherBuyPrice, lowerSellPrice, higherSellPrice, numberOfGrids = pickle.load(f)
+		pyCossClient = PyCOSSClient(api_public=publicKey, api_secret=privateKey)
 
 		#Load another instance of exchange API
 		myExchange = exchangeInfo()
