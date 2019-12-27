@@ -267,6 +267,7 @@ class gridBotStart:
 						backupOrders = gridBotStart.loadOrders('backupOrders.pickle')
 						recreatePrice = round(float(backupOrders[count]['start_price']), decimalLimit)
 						recreateSide = backupOrders[count]['order_side']
+						recreateOrder = None
 						try:
 							recreateOrder = pyCossClient.create_order(orderPair, recreateSide, orderType, orderSize, round(recreatePrice, decimalLimit))
 						except:
@@ -274,12 +275,18 @@ class gridBotStart:
 							orderCount = orderCount + 1
 							count = count + 1
 							continue
-						gridBotStart.sendTelegram("Grid order " + str(orderCount) + " was re-created from start price. Order is for a " + recreateSide + " at " + gridBotStart.floatToStr(round(float(recreatePrice), decimalLimit)) + " " + quotePair)
-						gridBotStart.updateRunHistory("Grid order " + str(orderCount) + " was re-created from start price. Order is for a " + recreateSide + " " + gridBotStart.floatToStr(round(float(recreatePrice), decimalLimit)) + " " + quotePair)
-						recreateOrder['prev_price'] = 0
-						recreateOrder['grid_status'] = 'open'
-						recreateOrder['start_price'] = round(recreatePrice, decimalLimit)
-						loadAndCheckOrders[count] = recreateOrder
+						if 'error' in recreateOrder:
+							print("Some error was encountered trying to create this order: " + str(recreateOrder['error']) + ", will try again later.")
+							orderCount = orderCount + 1
+							count = count + 1
+							continue
+						else:
+							gridBotStart.sendTelegram("Grid order " + str(orderCount) + " was re-created from start price. Order is for a " + recreateSide + " at " + gridBotStart.floatToStr(round(float(recreatePrice), decimalLimit)) + " " + quotePair)
+							gridBotStart.updateRunHistory("Grid order " + str(orderCount) + " was re-created from start price. Order is for a " + recreateSide + " " + gridBotStart.floatToStr(round(float(recreatePrice), decimalLimit)) + " " + quotePair)
+							recreateOrder['prev_price'] = 0
+							recreateOrder['grid_status'] = 'open'
+							recreateOrder['start_price'] = round(recreatePrice, decimalLimit)
+							loadAndCheckOrders[count] = recreateOrder
 					else:
 						print("No backup file exists, likely because you started this instance with an older version of the bot. This order cannot be recovered.")
 					orderCount = orderCount + 1
