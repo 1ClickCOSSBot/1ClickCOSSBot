@@ -8,6 +8,8 @@ This is a simple bot designed with a UI to enable easy botting on COSS exchange
 
 > Telegram Setup: https://youtu.be/BV-rOAODtlo
 
+> Mac Setup: https://youtu.be/xKAnjvVA29I
+
 ### Install Python and Dependencies
 1. Download the latest version of Python 3: https://www.python.org/downloads/
 2. When launching the installer ensure that "Add python to environment variables/path options are selected in custom options"
