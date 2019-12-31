@@ -2,6 +2,7 @@
 
 This is a simple bot designed with a UI to enable easy botting on COSS exchange
 
+## Running the Executable
 ### Youtube Videos:
 
 > Bot Setup: https://youtu.be/-F1ZSE13Az0
@@ -10,6 +11,7 @@ This is a simple bot designed with a UI to enable easy botting on COSS exchange
 
 > Mac Setup: https://youtu.be/xKAnjvVA29I
 
+## Installing From Source Code
 ### Install Python and Dependencies
 1. Download the latest version of Python 3: https://www.python.org/downloads/
 2. When launching the installer ensure that "Add python to environment variables/path options are selected in custom options"
