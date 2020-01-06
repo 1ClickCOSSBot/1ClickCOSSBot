@@ -168,6 +168,10 @@ def openRun():
 		print("There was an error when fetching pair price")
 
 	#Calculate start buy/sell and stop price ranges automatically
+	if float(gridDistance) >= float(latestPairPrice):
+		messagebox.showinfo("Warning", "Your grid distance cannot be greater than or equal to the current price of the pair! Please adjust your strategy")
+		openSettings()
+		return 0
 	startBuyPrice = round(float(latestPairPrice) - float(gridDistance), 8)
 	startSellPrice = round(float(latestPairPrice) + float(gridDistance), 8)
 	stopBuyPrice = round((startBuyPrice - (float(gridDistance) * (float(numberOfGrids)/2))) - float(gridDistance), 9)
@@ -184,18 +188,6 @@ def openRun():
 	runTradePairBox.config(state="disabled")
 	runInstanceNameBox.delete('1.0', tk.END)
 	runInstanceNameBox.insert(tk.END, "Grid MM" + "_" + tradePairRun + "_" + quotePairRun)
-	
-	balancesRequired = calcRequiredBalance()
-	quoteBalanceUseLabel.config(text=" Amount of " + quotePairRun + " needed for strategy:")
-	tradeBalanceUseLabel.config(text=" Amount of " + tradePairRun + " needed for strategy:")
-	quoteBalanceUseBox.config(state="normal")
-	quoteBalanceUseBox.delete('1.0', tk.END)
-	quoteBalanceUseBox.insert(tk.END, str(balancesRequired[0]))
-	quoteBalanceUseBox.config(state="disabled")
-	tradeBalanceUseBox.config(state="normal")
-	tradeBalanceUseBox.delete('1.0', tk.END)
-	tradeBalanceUseBox.insert(tk.END, str(balancesRequired[1]))
-	tradeBalanceUseBox.config(state="disabled")
 
 	startBuyBox.delete('1.0', tk.END)
 	startBuyBox.insert(tk.END, floatToStr(startBuyPrice))
@@ -206,6 +198,18 @@ def openRun():
 	stopSellBox.delete('1.0', tk.END)
 	stopSellBox.insert(tk.END, floatToStr(stopSellPrice))
 
+	balancesRequired = calcRequiredBalance()
+
+	quoteBalanceUseLabel.config(text=" Amount of " + quotePairRun + " needed for strategy:")
+	tradeBalanceUseLabel.config(text=" Amount of " + tradePairRun + " needed for strategy:")
+	quoteBalanceUseBox.config(state="normal")
+	quoteBalanceUseBox.delete('1.0', tk.END)
+	quoteBalanceUseBox.insert(tk.END, str(balancesRequired[0]))
+	quoteBalanceUseBox.config(state="disabled")
+	tradeBalanceUseBox.config(state="normal")
+	tradeBalanceUseBox.delete('1.0', tk.END)
+	tradeBalanceUseBox.insert(tk.END, str(balancesRequired[1]))
+	tradeBalanceUseBox.config(state="disabled")
 
 	runFrame.place(relwidth=FRAMEHEIGHT, relheight=FRAMEWIDTH, relx=FRAMEPADX, rely=FRAMEPADY)
 
@@ -374,7 +378,7 @@ def startStrategy():
 		quotePair, tradePair, publicKey, privateKey, orderSize, gridDistance, temp, temp, temp, temp, numberOfGrids = pickle.load(f)
 
 	with open('gridSettings.conf', 'wb') as f:
-		pickle.dump([quotePair, tradePair, publicKey, privateKey, orderSize, gridDistance, stopBuyBox.get("1.0", tk.END), startBuyBox.get("1,0", tk.END), startSellBox.get("1.0", tk.END), stopSellBox.get("1.0", tk.END), numberOfGrids], f)
+		pickle.dump([quotePair, tradePair, publicKey, privateKey, orderSize, gridDistance, stopBuyBox.get("1.0", tk.END), startBuyBox.get("1.0", tk.END), startSellBox.get("1.0", tk.END), stopSellBox.get("1.0", tk.END), numberOfGrids], f)
 	
 	strategyWithArg = partial(strategyThread, runInstanceNameBox.get("1.0", tk.END).replace(" ", ""))
 	strategyTestThread = threading.Thread(target=strategyWithArg)
@@ -437,17 +441,22 @@ def calcRequiredBalance():
 
 	#Load Strategy Settings
 	with open('gridSettings.conf', 'rb') as f:  # Python 3: open(..., 'rb')
-		quoteCalc, tradeCalc, temp, temp, orderSize, gridDistance, temp, higherBuyPrice, lowerSellPrice, temp, numberOfGrids = pickle.load(f)
+		quoteCalc, tradeCalc, temp, temp, orderSize, gridDistance, temp, temp, temp, temp, numberOfGrids = pickle.load(f)
 
 	oneSideGrids = int(numberOfGrids)/2
+	buyStartPrice = float(startBuyBox.get("1.0", tk.END))
+	sellStartPrice = float(startSellBox.get("1.0", tk.END))
 
 	#Calculate quote balance required
 	total = 0
-	currentPrice = float(higherBuyPrice)
-	for x in range(int(oneSideGrids)):
-		total = total + (float(orderSize) * float(currentPrice))
-		currentPrice = currentPrice - float(gridDistance)
-	total = round(total, 6)
+	currentPrice = float(buyStartPrice)
+	if numberOfGrids > 3:
+		for x in range(int(oneSideGrids)):
+			total = total + (float(orderSize) * float(currentPrice))
+			currentPrice = currentPrice - float(gridDistance)
+		total = round(total, 8)
+	else:
+		total = round(float(orderSize) * float(currentPrice), 8)
 	balancesRequired[0] = total
 
 	#Calculate trade balance required
@@ -727,7 +736,7 @@ startBuyLabel = tk.Label(runFrame, text=" Starting Buy Price (" + quotePair.get(
 startBuyLabel.config(relief=FLAT, bg=BACKGROUND, fg=FOREGROUND)
 startBuyLabel.grid(row=5, column=0, sticky="W")
 startBuyBox = tk.Text(runFrame, width=12, height=1)
-startBuyBox.insert(tk.END, "0.000065")
+startBuyBox.insert(tk.END, "1")
 startBuyBox.config(bg="white", fg="black")
 startBuyBox.grid(row=5, column=2, sticky="W")
 
@@ -735,7 +744,7 @@ startSellLabel = tk.Label(runFrame, text=" Starting Sell Price (" + quotePair.ge
 startSellLabel.config(relief=FLAT, bg=BACKGROUND, fg=FOREGROUND)
 startSellLabel.grid(row=6, column=0, sticky="W")
 startSellBox = tk.Text(runFrame, width=12, height=1)
-startSellBox.insert(tk.END, "0.000065")
+startSellBox.insert(tk.END, "1")
 startSellBox.config(bg="white", fg="black")
 startSellBox.grid(row=6, column=2, sticky="W")
 
@@ -743,7 +752,7 @@ stopBuyLabel = tk.Label(runFrame, text=" Lowest Buy Price (" + quotePair.get() +
 stopBuyLabel.config(relief=FLAT, bg=BACKGROUND, fg=FOREGROUND)
 stopBuyLabel.grid(row=7, column=0, sticky="W")
 stopBuyBox = tk.Text(runFrame, width=12, height=1)
-stopBuyBox.insert(tk.END, "0.000065")
+stopBuyBox.insert(tk.END, "1")
 stopBuyBox.config(bg="white", fg="black")
 stopBuyBox.grid(row=7, column=2, sticky="W")
 
@@ -751,7 +760,7 @@ stopSellLabel = tk.Label(runFrame, text=" Highest Sell Price (" + quotePair.get(
 stopSellLabel.config(relief=FLAT, bg=BACKGROUND, fg=FOREGROUND)
 stopSellLabel.grid(row=8, column=0, sticky="W")
 stopSellBox = tk.Text(runFrame, width=12, height=1)
-stopSellBox.insert(tk.END, "0.000065")
+stopSellBox.insert(tk.END, "1")
 stopSellBox.config(bg="white", fg="black")
 stopSellBox.grid(row=8, column=2, sticky="W")
 

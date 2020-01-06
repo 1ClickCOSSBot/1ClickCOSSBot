@@ -394,7 +394,7 @@ class gridBotStart:
 						print("Price doesn't fall within your specified price range")
 				else:
 					print("Order " + str(orderCount) + " is partially filled or cancelled")
-					print("\nFull status of order: " + currentStatus + "\n\n")
+					print("\nFull status of order: " + str(currentStatus) + "\n\n")
 				orderCount = orderCount + 1
 				count = count + 1
 				time.sleep(0.2)
