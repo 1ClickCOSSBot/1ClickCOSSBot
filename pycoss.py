@@ -7,26 +7,18 @@ from urllib.parse import urlencode
 
 import requests
 
-
-# If you have no API keys, you can generate them from the Account --> Services --> API Management page.
-# API_SECRET _must_ be in byte format for SHA256 encoding.
-# Ellipses (...) in a function's docstrings implies that this pattern continues for multiple symbols.
-
-# One important thing to note is that pairs include _underscores_ (e.g. 'BTC_USDT') - ensure you're calling symbols
-# like the example instead of 'ETH-BTC', 'ETHBTC', or 'ETH/BTC'.
-
 # Initialise the client by instantiating the class and filling in the blanks with your API keys.
-# client = PyCOSSClient(api_public="", api_secret="")
 
 
 class PyCOSSClient(object):
     
-    def __init__(self, api_public, api_secret):
+    def __init__(self, api_public, api_username):
         self.API_PUBLIC = api_public
-        self.API_SECRET = bytearray(api_secret, encoding="utf8")
-        self.TRADE_URL = "https://trade.coss.io/c/api/v1"
-        self.EXCHANGE_URL = "https://exchange.coss.io/api"
-        self.ENGINE_URL = "https://engine.coss.io/api/v1"
+        self.API_USERNAME = api_username
+        self.API_SECRET = bytearray(api_public, encoding="utf8")
+        self.TRADE_URL = "https://dex-api.coss.io"
+        self.EXCHANGE_URL = "https://dex-api.coss.io"
+        self.ENGINE_URL = "https://dex-api.coss.io"
         self.order_headers = {"Content-Type": "application/json",
                               "X-Requested-With": "XMLHttpRequest",
                               "Authorization": self.API_PUBLIC, 
