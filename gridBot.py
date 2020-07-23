@@ -43,7 +43,7 @@ class gridBotStart:
 		f.close()
 
 	def saveOrders(orders, fileName):
-		#Check if database file already exists, if file exists ask user if they would like to cancel all previous orders and start over
+		#Save all orders
 		with open(fileName, 'wb') as handle:
 			pickle.dump(orders, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
@@ -66,7 +66,6 @@ class gridBotStart:
 	def cancelAndExit():
 		with open('gridSettings.conf', 'rb') as f:
 			temp, temp, publicKey, privateKey, temp, temp, temp, temp, temp, temp, temp = pickle.load(f)
-		exitCossClient = PyCOSSClient(api_public=publicKey, api_secret=privateKey)
 		if os.path.exists("orderDb.pickle"):
 			myOrders = gridBotStart.loadOrders('orderDb.pickle')
 			gridBotStart.cancelOrders(exitCossClient, myOrders)
